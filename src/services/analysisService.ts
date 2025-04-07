@@ -30,10 +30,16 @@ export interface NutritionData {
   ingredients: string[];
 }
 
+export interface HealthEffects {
+  ingredient: string;
+  effect: string;
+}
+
 export interface HealthAnalysis {
   condition: string;
   recommendation: 'safe' | 'caution' | 'avoid';
   reasoning: string;
+  effects: HealthEffects[];
 }
 
 // Common allergens
@@ -184,130 +190,212 @@ export function analyzeForHealthConditions(data: NutritionData): HealthAnalysis[
   return results;
 }
 
+// Health effect definitions for ingredients
+const diabetesIngredientEffects: Record<string, string> = {
+  'sugar': 'Raises blood glucose levels rapidly, potentially causing blood sugar spikes',
+  'corn syrup': 'High glycemic index that raises blood glucose quickly and significantly',
+  'high fructose': 'Can increase insulin resistance and may worsen blood glucose control',
+  'maltodextrin': 'Has a high glycemic index that can cause rapid blood sugar increases',
+  'dextrose': 'Pure glucose that rapidly raises blood sugar levels',
+  'honey': 'Natural but still raises blood sugar levels quickly',
+  'molasses': 'Contains concentrated sugars that can spike blood glucose',
+  'agave': 'High in fructose which may negatively impact insulin sensitivity',
+  'white flour': 'Refined carbohydrate that converts quickly to glucose',
+  'white bread': 'Has a high glycemic index and can cause blood sugar spikes'
+};
+
+const hypertensionIngredientEffects: Record<string, string> = {
+  'salt': 'Increases water retention and blood volume, raising blood pressure',
+  'sodium': 'Causes fluid retention, increasing blood volume and pressure',
+  'msg': 'May temporarily raise blood pressure in some individuals',
+  'monosodium glutamate': 'Can cause temporary blood pressure elevation in sensitive people',
+  'baking soda': 'High sodium content that can contribute to elevated blood pressure',
+  'sodium bicarbonate': 'Contains sodium which can increase blood pressure',
+  'sodium nitrate': 'Used in preserved meats, may contribute to blood pressure issues',
+  'sodium benzoate': 'Preservative that adds sodium to the diet',
+  'soy sauce': 'Very high sodium content that can significantly impact blood pressure',
+  'bouillon': 'Typically high in sodium which can raise blood pressure'
+};
+
+const thyroidIngredientEffects: Record<string, string> = {
+  'soy': 'Contains isoflavones that may interfere with thyroid hormone production',
+  'soybeans': 'Can inhibit thyroid hormone synthesis in some individuals',
+  'soy protein': 'May interfere with thyroid medication absorption',
+  'tofu': 'Contains compounds that can affect thyroid function',
+  'millet': 'Contains goitrogens that may interfere with iodine uptake',
+  'raw kale': 'Contains goitrogens that can affect thyroid function if consumed in large amounts',
+  'raw spinach': 'Contains goitrogens that may impact thyroid hormone production',
+  'raw broccoli': 'Contains goitrogens that can interfere with thyroid function',
+  'raw cabbage': 'Contains substances that may inhibit thyroid hormone production',
+  'raw cauliflower': 'Contains goitrogens that may inhibit thyroid function',
+  'seaweed': 'High iodine content which may disrupt thyroid function if consumed excessively',
+  'kelp': 'Very high in iodine which can worsen certain thyroid conditions',
+  'iodized salt': 'High iodine content may affect thyroid function in sensitive individuals'
+};
+
 function analyzeForDiabetes(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No concerning ingredients found for people with diabetes.';
+  let effects: HealthEffects[] = [];
 
   // Check sugars
   if (data.sugars && data.sugars.amount > 10) {
     recommendation = 'avoid';
     reasoning = `High sugar content (${data.sugars.amount}${data.sugars.unit}) may cause blood sugar spikes.`;
+    effects.push({
+      ingredient: 'Sugars',
+      effect: `High amount (${data.sugars.amount}${data.sugars.unit}) can cause rapid blood glucose elevation`
+    });
   } else if (data.sugars && data.sugars.amount > 5) {
     recommendation = 'caution';
     reasoning = `Moderate sugar content (${data.sugars.amount}${data.sugars.unit}) - consume in moderation.`;
+    effects.push({
+      ingredient: 'Sugars',
+      effect: `Moderate amount (${data.sugars.amount}${data.sugars.unit}) may affect blood glucose levels`
+    });
   }
 
   // Check carbs if sugars aren't explicitly high
-  if (recommendation === 'safe' && data.totalCarbohydrates && data.totalCarbohydrates.amount > 30) {
-    recommendation = 'caution';
-    reasoning = `High carbohydrate content (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}) - monitor blood sugar after consumption.`;
+  if (data.totalCarbohydrates && data.totalCarbohydrates.amount > 30) {
+    recommendation = recommendation === 'safe' ? 'caution' : recommendation;
+    reasoning = recommendation === 'safe' ? 
+      `High carbohydrate content (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}) - monitor blood sugar after consumption.` : 
+      reasoning + ` Also contains high carbohydrates (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}).`;
+    
+    effects.push({
+      ingredient: 'Carbohydrates',
+      effect: `High amount (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}) can gradually raise blood glucose levels`
+    });
   }
 
   // Look for high-glycemic ingredients
-  const highGlycemicIngredients = ['corn syrup', 'high fructose', 'maltodextrin', 'dextrose'];
+  const highGlycemicIngredients = Object.keys(diabetesIngredientEffects);
+  
   if (data.ingredients) {
-    const foundIngredients = data.ingredients.filter(ingredient => 
-      highGlycemicIngredients.some(high => ingredient.includes(high))
-    );
-    
-    if (foundIngredients.length > 0) {
-      recommendation = recommendation === 'safe' ? 'caution' : 'avoid';
-      reasoning += ` Contains high-glycemic ingredients: ${foundIngredients.join(', ')}.`;
-    }
+    data.ingredients.forEach(ingredient => {
+      for (const problematicIngredient of highGlycemicIngredients) {
+        if (ingredient.toLowerCase().includes(problematicIngredient.toLowerCase())) {
+          recommendation = recommendation === 'safe' ? 'caution' : 'avoid';
+          
+          effects.push({
+            ingredient: ingredient,
+            effect: diabetesIngredientEffects[problematicIngredient]
+          });
+          
+          // Update reasoning if not already mentioned
+          if (!reasoning.includes(ingredient)) {
+            reasoning += reasoning.endsWith('.') ? ` Contains ${ingredient} which can affect blood sugar levels.` : `, ${ingredient} which can affect blood sugar levels.`;
+          }
+        }
+      }
+    });
   }
 
   return {
     condition: 'Diabetes',
     recommendation,
-    reasoning
+    reasoning,
+    effects
   };
 }
 
 function analyzeForHypertension(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No concerning ingredients found for people with hypertension.';
+  let effects: HealthEffects[] = [];
 
   // Check sodium
   if (data.sodium) {
     if (data.sodium.amount > 400) {
       recommendation = 'avoid';
       reasoning = `High sodium content (${data.sodium.amount}${data.sodium.unit}) may increase blood pressure.`;
+      effects.push({
+        ingredient: 'Sodium',
+        effect: `High amount (${data.sodium.amount}${data.sodium.unit}) can significantly raise blood pressure`
+      });
     } else if (data.sodium.amount > 200) {
       recommendation = 'caution';
       reasoning = `Moderate sodium content (${data.sodium.amount}${data.sodium.unit}) - consume in moderation.`;
+      effects.push({
+        ingredient: 'Sodium',
+        effect: `Moderate amount (${data.sodium.amount}${data.sodium.unit}) may temporarily affect blood pressure`
+      });
     }
   }
 
   // Look for ingredients that may affect blood pressure
-  const concerningIngredients = ['msg', 'monosodium glutamate', 'baking soda', 'sodium bicarbonate', 'sodium nitrate', 'sodium benzoate'];
+  const concerningIngredients = Object.keys(hypertensionIngredientEffects);
+  
   if (data.ingredients) {
-    const foundIngredients = data.ingredients.filter(ingredient => 
-      concerningIngredients.some(item => ingredient.includes(item))
-    );
-    
-    if (foundIngredients.length > 0) {
-      recommendation = recommendation === 'safe' ? 'caution' : recommendation;
-      reasoning += ` Contains ingredients that may affect blood pressure: ${foundIngredients.join(', ')}.`;
-    }
+    data.ingredients.forEach(ingredient => {
+      for (const problematicIngredient of concerningIngredients) {
+        if (ingredient.toLowerCase().includes(problematicIngredient.toLowerCase())) {
+          recommendation = recommendation === 'safe' ? 'caution' : recommendation;
+          
+          effects.push({
+            ingredient: ingredient,
+            effect: hypertensionIngredientEffects[problematicIngredient]
+          });
+          
+          // Update reasoning if not already mentioned
+          if (!reasoning.includes(ingredient)) {
+            reasoning += reasoning.endsWith('.') ? ` Contains ${ingredient} which may affect blood pressure.` : `, ${ingredient} which may affect blood pressure.`;
+          }
+        }
+      }
+    });
   }
 
   return {
     condition: 'Hypertension',
     recommendation,
-    reasoning
+    reasoning,
+    effects
   };
 }
 
 function analyzeForThyroid(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No concerning ingredients found for people with thyroid issues.';
+  let effects: HealthEffects[] = [];
 
-  // Look for iodine-rich or goitrogenic ingredients
-  const goitrogenicIngredients = [
-    'soy', 'soybeans', 'soy protein', 'tofu', 
-    'millet', 'raw kale', 'raw spinach', 'raw broccoli', 'raw cabbage', 
-    'raw brussels sprouts', 'raw cauliflower'
-  ];
+  // Look for thyroid-affecting ingredients
+  const thyroidAffectingIngredients = Object.keys(thyroidIngredientEffects);
   
-  const iodineRichIngredients = [
-    'seaweed', 'kelp', 'nori', 'dulse',
-    'iodized salt'
-  ];
-
   if (data.ingredients) {
-    const foundGoitrogens = data.ingredients.filter(ingredient => 
-      goitrogenicIngredients.some(item => ingredient.includes(item))
-    );
-    
-    const foundIodine = data.ingredients.filter(ingredient => 
-      iodineRichIngredients.some(item => ingredient.includes(item))
-    );
-    
-    if (foundGoitrogens.length > 0) {
-      recommendation = 'caution';
-      reasoning = `Contains goitrogenic ingredients that may affect thyroid function: ${foundGoitrogens.join(', ')}.`;
-    }
-    
-    if (foundIodine.length > 0) {
-      if (recommendation === 'caution') {
-        reasoning += ` Also contains iodine-rich ingredients: ${foundIodine.join(', ')}.`;
-      } else {
-        recommendation = 'caution';
-        reasoning = `Contains iodine-rich ingredients that may affect thyroid function: ${foundIodine.join(', ')}.`;
+    data.ingredients.forEach(ingredient => {
+      for (const problematicIngredient of thyroidAffectingIngredients) {
+        if (ingredient.toLowerCase().includes(problematicIngredient.toLowerCase())) {
+          recommendation = 'caution';
+          
+          effects.push({
+            ingredient: ingredient,
+            effect: thyroidIngredientEffects[problematicIngredient]
+          });
+          
+          // Update reasoning if not already mentioned
+          if (!reasoning.includes(ingredient)) {
+            reasoning = reasoning === 'No concerning ingredients found for people with thyroid issues.' ? 
+              `Contains ${ingredient} which may affect thyroid function.` : 
+              reasoning + ` Also contains ${ingredient} which may affect thyroid function.`;
+          }
+        }
       }
-    }
+    });
   }
 
   return {
     condition: 'Thyroid Issues',
     recommendation,
-    reasoning
+    reasoning,
+    effects
   };
 }
 
 function analyzeForAllergies(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No common allergens detected.';
+  let effects: HealthEffects[] = [];
 
   // Check for known allergens
   const foundAllergens = data.allergens.filter(allergen => allergen.found);
@@ -319,7 +407,15 @@ function analyzeForAllergies(data: NutritionData): HealthAnalysis {
       return self.indexOf(value) === index || 
              !self.some((v, i) => i < index && v.includes(value) || value.includes(v));
     });
+    
     reasoning = `Contains common allergens: ${allergenNames.join(', ')}.`;
+    
+    allergenNames.forEach(allergen => {
+      effects.push({
+        ingredient: allergen,
+        effect: `Can trigger allergic reactions ranging from mild symptoms to severe anaphylaxis in people with ${allergen} allergies`
+      });
+    });
   }
   
   // Check for "may contain" statements in the ingredients
@@ -334,11 +430,17 @@ function analyzeForAllergies(data: NutritionData): HealthAnalysis {
     reasoning = reasoning === 'No common allergens detected.' ? 
       'May contain traces of allergens due to processing.' : 
       reasoning + ' Product may also contain traces of other allergens due to processing.';
+    
+    effects.push({
+      ingredient: 'Processing facility',
+      effect: 'Cross-contamination risk may expose product to trace amounts of various allergens'
+    });
   }
 
   return {
     condition: 'Food Allergies',
     recommendation,
-    reasoning
+    reasoning,
+    effects
   };
 }
