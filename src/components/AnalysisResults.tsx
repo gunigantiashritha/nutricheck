@@ -89,7 +89,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Alert variant="outline" className="bg-background/50">
+            <Alert className="bg-background/50">
               <AlertTitle className="flex items-center text-sm font-medium">
                 {getRecommendationIcon(result.recommendation)}
                 <span className="ml-2">
