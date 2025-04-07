@@ -1,5 +1,8 @@
-import { useLocation } from "react-router-dom";
+
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,13 +15,16 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-health-blue/10 to-health-teal/10">
+      <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md w-full">
+        <AlertTriangle className="h-16 w-16 text-caution mx-auto mb-4" />
         <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+        <p className="text-xl text-gray-600 mb-6">Sorry, the page you're looking for wasn't found</p>
+        <Link to="/">
+          <Button className="bg-health-blue hover:bg-health-blue/90">
+            Return to Home
+          </Button>
+        </Link>
       </div>
     </div>
   );
