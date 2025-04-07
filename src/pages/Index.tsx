@@ -5,9 +5,9 @@ import ImageUploader from '@/components/ImageUploader';
 import AnalysisResults from '@/components/AnalysisResults';
 import { extractTextFromImage } from '@/services/ocrService';
 import { parseNutritionInfo, analyzeForHealthConditions, HealthAnalysis } from '@/services/analysisService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, FileText, Info } from 'lucide-react';
 
 const Index = () => {
