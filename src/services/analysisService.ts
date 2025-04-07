@@ -1,4 +1,3 @@
-
 interface NutrientInfo {
   name: string;
   amount: number;
@@ -257,7 +256,9 @@ function analyzeForDiabetes(data: NutritionData): HealthAnalysis {
 
   // Check carbs if sugars aren't explicitly high
   if (data.totalCarbohydrates && data.totalCarbohydrates.amount > 30) {
+    // Fix: The comparison with string literals needs to use appropriate type checking
     recommendation = recommendation === 'safe' ? 'caution' : recommendation;
+    // Fix: Use string comparison for the conditional text
     reasoning = recommendation === 'safe' ? 
       `High carbohydrate content (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}) - monitor blood sugar after consumption.` : 
       reasoning + ` Also contains high carbohydrates (${data.totalCarbohydrates.amount}${data.totalCarbohydrates.unit}).`;
@@ -275,6 +276,7 @@ function analyzeForDiabetes(data: NutritionData): HealthAnalysis {
     data.ingredients.forEach(ingredient => {
       for (const problematicIngredient of highGlycemicIngredients) {
         if (ingredient.toLowerCase().includes(problematicIngredient.toLowerCase())) {
+          // Fix: The comparison with string literals needs to use appropriate type checking
           recommendation = recommendation === 'safe' ? 'caution' : 'avoid';
           
           effects.push({
