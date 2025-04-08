@@ -16,10 +16,10 @@ const ResultsPage = () => {
 
   return (
     <PageLayout>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center w-full">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">Analysis Results</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Analysis Results</h1>
+          <p className="text-gray-600 text-sm md:text-base">
             Check if this food product is suitable for your health needs
           </p>
         </div>
@@ -32,8 +32,8 @@ const ResultsPage = () => {
             />
           </div>
         ) : (
-          <div className="text-center space-y-4">
-            <Card className="w-full max-w-md">
+          <div className="text-center space-y-4 w-full px-4">
+            <Card className="w-full max-w-md mx-auto">
               <CardContent className="pt-6 flex flex-col items-center">
                 <FileText className="h-12 w-12 text-gray-300 mb-2" />
                 <p className="text-gray-500">No analysis results yet. Upload an image to get started.</p>
@@ -42,7 +42,7 @@ const ResultsPage = () => {
             
             <Button 
               onClick={() => navigate('/upload')}
-              className="flex items-center mt-6"
+              className="flex items-center mt-6 mx-auto"
             >
               <Upload className="mr-2 h-4 w-4" />
               Upload a Nutrition Label

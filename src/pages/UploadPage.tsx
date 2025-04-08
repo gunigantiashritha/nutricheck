@@ -53,10 +53,10 @@ const UploadPage = () => {
 
   return (
     <PageLayout>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center w-full">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">Upload a Nutrition Label</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload a Nutrition Label</h1>
+          <p className="text-gray-600 text-sm md:text-base">
             Take a clear photo of the nutrition facts and ingredients list
           </p>
         </div>
@@ -64,8 +64,8 @@ const UploadPage = () => {
         <div className="w-full max-w-lg">
           <ImageUploader onImageCapture={handleImageCapture} isProcessing={isProcessing} />
           
-          <Card className="mt-8">
-            <CardHeader>
+          <Card className="mt-6 md:mt-8">
+            <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center">
                 <FileText className="mr-2 h-5 w-5 text-health-blue" />
                 How to Take a Good Photo

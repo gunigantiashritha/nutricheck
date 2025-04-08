@@ -1,38 +1,76 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+import { NavLink } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { Upload, FileText, Home, Info } from 'lucide-react';
 
-const NavigationItems = [
-  { name: 'Home', path: '/' },
-  { name: 'About', path: '/about' },
-  { name: 'Upload', path: '/upload' },
-  { name: 'Results', path: '/results' },
-];
+interface NavigationProps {
+  vertical?: boolean;
+}
 
-const Navigation = () => {
-  const location = useLocation();
-
+const Navigation = ({ vertical = false }: NavigationProps) => {
+  const baseNavStyles = "flex items-center transition-all duration-200";
+  const horizontalNavStyles = "space-x-6";
+  const verticalNavStyles = "flex-col space-y-6";
+  
+  const baseLinkStyles = "flex items-center text-sm font-medium transition-colors";
+  const horizontalLinkStyles = "text-white/80 hover:text-white";
+  const verticalLinkStyles = "text-gray-700 hover:text-health-blue";
+  
+  const activeHorizontalClass = "text-white";
+  const activeVerticalClass = "text-health-blue";
+  
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        {NavigationItems.map((item) => (
-          <NavigationMenuItem key={item.name}>
-            <Link to={item.path}>
-              <NavigationMenuLink 
-                className={cn(
-                  "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                  location.pathname === item.path ? "bg-accent text-accent-foreground" : "text-foreground"
-                )}
-              >
-                {item.name}
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-        ))}
-      </NavigationMenuList>
-    </NavigationMenu>
+    <nav className={cn(baseNavStyles, vertical ? verticalNavStyles : horizontalNavStyles)}>
+      <NavLink 
+        to="/" 
+        end
+        className={({ isActive }) => cn(
+          baseLinkStyles,
+          vertical ? verticalLinkStyles : horizontalLinkStyles,
+          isActive ? (vertical ? activeVerticalClass : activeHorizontalClass) : ""
+        )}
+      >
+        {vertical && <Home className="mr-2 h-4 w-4" />}
+        Home
+      </NavLink>
+      
+      <NavLink 
+        to="/about" 
+        className={({ isActive }) => cn(
+          baseLinkStyles,
+          vertical ? verticalLinkStyles : horizontalLinkStyles,
+          isActive ? (vertical ? activeVerticalClass : activeHorizontalClass) : ""
+        )}
+      >
+        {vertical && <Info className="mr-2 h-4 w-4" />}
+        About
+      </NavLink>
+      
+      <NavLink 
+        to="/upload" 
+        className={({ isActive }) => cn(
+          baseLinkStyles,
+          vertical ? verticalLinkStyles : horizontalLinkStyles,
+          isActive ? (vertical ? activeVerticalClass : activeHorizontalClass) : ""
+        )}
+      >
+        {vertical && <Upload className="mr-2 h-4 w-4" />}
+        Upload
+      </NavLink>
+      
+      <NavLink 
+        to="/results" 
+        className={({ isActive }) => cn(
+          baseLinkStyles,
+          vertical ? verticalLinkStyles : horizontalLinkStyles,
+          isActive ? (vertical ? activeVerticalClass : activeHorizontalClass) : ""
+        )}
+      >
+        {vertical && <FileText className="mr-2 h-4 w-4" />}
+        Results
+      </NavLink>
+    </nav>
   );
 };
 
