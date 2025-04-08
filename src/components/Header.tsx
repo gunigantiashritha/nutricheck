@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { HeartPulse } from 'lucide-react';
+import Navigation from './Navigation';
 
 const Header = () => {
   return (
@@ -10,6 +11,7 @@ const Header = () => {
           <HeartPulse className="h-8 w-8 text-white" />
           <h1 className="text-2xl font-bold text-white">NutriCheck</h1>
         </div>
+        <Navigation />
       </div>
     </header>
   );
