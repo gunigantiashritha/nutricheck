@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Check, AlertTriangle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, AlertTriangle, XCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { HealthAnalysis } from '@/services/analysisService';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -45,6 +45,21 @@ const getRecommendationTitle = (recommendation: string) => {
       return 'Consume with caution';
     case 'avoid':
       return 'Avoid consumption';
+    default:
+      return '';
+  }
+};
+
+const getPrecautions = (condition: string): string => {
+  switch (condition) {
+    case 'Diabetes':
+      return 'Monitor blood glucose levels closely after consumption. Consider adjusting insulin or medication as needed. Consume in small portions, preferably alongside protein or fiber-rich foods to slow absorption.';
+    case 'Hypertension':
+      return 'Monitor blood pressure regularly if consuming this product. Consider reducing portion size or limiting frequency. Maintain adequate hydration and consult with healthcare provider about suitable alternatives.';
+    case 'Thyroid Issues':
+      return 'If taking thyroid medication, consume this product at least 4 hours after medication. Consider spacing out consumption from other meals. Consult with your healthcare provider about potential interactions.';
+    case 'Food Allergies':
+      return 'Have emergency medication (e.g., epinephrine auto-injector) available if you choose to consume. Avoid completely if you have severe allergies to identified ingredients. Cross-contamination risks remain even with trace amounts.';
     default:
       return '';
   }
@@ -117,6 +132,19 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
                   {result.reasoning}
                 </AlertDescription>
               </Alert>
+              
+              {/* Show precautions if not safe */}
+              {(result.recommendation === 'caution' || result.recommendation === 'avoid') && (
+                <Alert className="bg-background/50 mt-3 border-amber-300">
+                  <AlertTitle className="flex items-center text-sm font-medium">
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                    <span className="ml-2">Precautions:</span>
+                  </AlertTitle>
+                  <AlertDescription className="text-sm">
+                    {getPrecautions(result.condition)}
+                  </AlertDescription>
+                </Alert>
+              )}
               
               {result.effects && result.effects.length > 0 && (
                 <CollapsibleTrigger className="w-full mt-3 flex items-center justify-between p-2 bg-background/70 rounded text-sm font-medium hover:bg-background/90 transition-colors">
