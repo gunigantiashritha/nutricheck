@@ -3,13 +3,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
 import AnalysisResults from '@/components/AnalysisResults';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 
 const ResultsPage = () => {
-  const { extractedText, analysisResults } = useAnalysis();
+  const { analysisResults } = useAnalysis();
   const navigate = useNavigate();
 
   const hasResults = analysisResults && analysisResults.length > 0;
@@ -30,22 +30,6 @@ const ResultsPage = () => {
               results={analysisResults}
               isLoading={false}
             />
-            
-            {extractedText && (
-              <Card className="mt-8">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <FileText className="mr-2 h-5 w-5 text-health-blue" />
-                    Extracted Text
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="max-h-48 overflow-y-auto bg-gray-50 p-3 rounded text-sm">
-                    <pre className="whitespace-pre-wrap">{extractedText}</pre>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         ) : (
           <div className="text-center space-y-4">
