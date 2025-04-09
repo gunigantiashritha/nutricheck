@@ -11,12 +11,14 @@ import {
   ChartLegendContent
 } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useAnalysis } from '@/services/AnalysisContext';
 
 const HealthDashboard: React.FC = () => {
-  const { healthProfile } = useUser();
+  const { healthProfile, safeFoodCount } = useUser();
+  const { productHistory } = useAnalysis();
   
   // Calculate scan statistics
-  const safeProducts = healthProfile.scanHistory.safeProductsCount || 0;
+  const safeProducts = safeFoodCount || 0;
   const cautionProducts = healthProfile.scanHistory.count - safeProducts;
   
   const data = [
@@ -28,7 +30,6 @@ const HealthDashboard: React.FC = () => {
 
   // Calculate streak data
   const currentStreak = healthProfile.scanHistory.streak || 0;
-  const longestStreak = healthProfile.scanHistory.longestStreak || 0;
   const totalScans = healthProfile.scanHistory.count || 0;
   
   return (
@@ -66,12 +67,12 @@ const HealthDashboard: React.FC = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center">
               <CircleMinus className="h-4 w-4 text-purple-500 mr-2" />
-              Longest Streak
+              Best Record
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{longestStreak} {longestStreak === 1 ? 'day' : 'days'}</div>
-            <p className="text-xs text-muted-foreground">Your best record</p>
+            <div className="text-2xl font-bold">{currentStreak} {currentStreak === 1 ? 'day' : 'days'}</div>
+            <p className="text-xs text-muted-foreground">Your best streak</p>
           </CardContent>
         </Card>
       </div>

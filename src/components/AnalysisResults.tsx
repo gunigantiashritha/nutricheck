@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -55,13 +54,13 @@ const getRecommendationTitle = (recommendation: string) => {
 const getBadgeVariant = (recommendation: string) => {
   switch (recommendation) {
     case 'safe':
-      return 'success';
+      return 'default';
     case 'caution':
-      return 'warning';
+      return 'secondary';
     case 'avoid':
       return 'destructive';
     default:
-      return 'default';
+      return 'outline';
   }
 };
 
@@ -116,7 +115,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
     return null;
   }
   
-  // Count recommendations
   const safeCounts = results.filter(r => r.recommendation === 'safe').length;
   const cautionCounts = results.filter(r => r.recommendation === 'caution').length;
   const avoidCounts = results.filter(r => r.recommendation === 'avoid').length;
@@ -209,7 +207,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
                     </AlertDescription>
                   </Alert>
                   
-                  {/* Show precautions if not safe */}
                   {(result.recommendation === 'caution' || result.recommendation === 'avoid') && (
                     <Alert className="bg-background/50 mt-3 border-amber-300">
                       <AlertTitle className="flex items-center text-sm font-medium">
