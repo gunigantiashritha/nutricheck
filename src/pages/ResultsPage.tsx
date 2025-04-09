@@ -3,12 +3,14 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
 import AnalysisResults from '@/components/AnalysisResults';
+import HealthDashboard from '@/components/HealthDashboard';
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Upload, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ResultsPage = () => {
   const { analysisResults } = useAnalysis();
@@ -17,6 +19,7 @@ const ResultsPage = () => {
   const navigate = useNavigate();
 
   const hasResults = analysisResults && analysisResults.length > 0;
+  const hasCompletedScans = healthProfile.scanHistory && healthProfile.scanHistory.count > 0;
   
   // Show achievement notifications when user reaches milestones
   useEffect(() => {
@@ -78,11 +81,35 @@ const ResultsPage = () => {
         )}
         
         {hasResults ? (
-          <div className="w-full max-w-md">
-            <AnalysisResults 
-              results={analysisResults}
-              isLoading={false}
-            />
+          <div className="w-full max-w-3xl">
+            <Tabs defaultValue="analysis" className="w-full">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-4">
+                <TabsTrigger value="analysis">Current Analysis</TabsTrigger>
+                <TabsTrigger value="dashboard">Health Dashboard</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="analysis" className="mt-0">
+                <AnalysisResults 
+                  results={analysisResults}
+                  isLoading={false}
+                />
+              </TabsContent>
+              
+              <TabsContent value="dashboard" className="mt-0">
+                {hasCompletedScans ? (
+                  <HealthDashboard />
+                ) : (
+                  <Card className="max-w-md mx-auto">
+                    <CardContent className="pt-6 flex flex-col items-center">
+                      <Award className="h-12 w-12 text-gray-300 mb-2" />
+                      <p className="text-gray-500 text-center">
+                        Complete your first scan to see your health dashboard
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <div className="text-center space-y-4 w-full px-4">

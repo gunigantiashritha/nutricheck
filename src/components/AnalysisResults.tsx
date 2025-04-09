@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Check, AlertTriangle, XCircle, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { Check, AlertTriangle, XCircle, ChevronDown, ChevronUp, AlertCircle, Info, Layers } from 'lucide-react';
 import { HealthAnalysis } from '@/services/analysisService';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AnalysisResultsProps {
   results: HealthAnalysis[];
@@ -50,6 +52,19 @@ const getRecommendationTitle = (recommendation: string) => {
   }
 };
 
+const getBadgeVariant = (recommendation: string) => {
+  switch (recommendation) {
+    case 'safe':
+      return 'success';
+    case 'caution':
+      return 'warning';
+    case 'avoid':
+      return 'destructive';
+    default:
+      return 'default';
+  }
+};
+
 const getPrecautions = (condition: string): string => {
   switch (condition) {
     case 'Diabetes':
@@ -67,6 +82,7 @@ const getPrecautions = (condition: string): string => {
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading }) => {
   const [openCards, setOpenCards] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("summary");
 
   const toggleCard = (index: number) => {
     setOpenCards(prevOpenCards => {
@@ -99,80 +115,142 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
   if (!results || results.length === 0) {
     return null;
   }
+  
+  // Count recommendations
+  const safeCounts = results.filter(r => r.recommendation === 'safe').length;
+  const cautionCounts = results.filter(r => r.recommendation === 'caution').length;
+  const avoidCounts = results.filter(r => r.recommendation === 'avoid').length;
 
   return (
     <div className="w-full max-w-md mx-auto mt-6 space-y-4">
-      {results.map((result, index) => (
-        <Collapsible 
-          key={index}
-          open={openCards.includes(index)}
-          onOpenChange={() => toggleCard(index)}
-        >
-          <Card 
-            className={`w-full ${getRecommendationClass(result.recommendation)}`}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>{result.condition}</span>
-                <span className="text-sm font-normal flex items-center">
-                  {getRecommendationIcon(result.recommendation)}
-                  <span className="ml-1">{getRecommendationTitle(result.recommendation)}</span>
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Alert className="bg-background/50">
-                <AlertTitle className="flex items-center text-sm font-medium">
-                  {getRecommendationIcon(result.recommendation)}
-                  <span className="ml-2">
-                    {result.recommendation === 'safe' ? 'Analysis Result:' : 'Warning:'}
-                  </span>
-                </AlertTitle>
-                <AlertDescription className="text-sm">
-                  {result.reasoning}
-                </AlertDescription>
-              </Alert>
+      <Tabs defaultValue="summary" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 mb-2">
+          <TabsTrigger value="summary">Summary View</TabsTrigger>
+          <TabsTrigger value="detailed">Detailed Analysis</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="summary" className="mt-0">
+          <Card className="mb-4">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <Layers className="h-5 w-5 text-gray-500 mr-2" />
+                  <span className="font-medium">Analysis Summary</span>
+                </div>
+                <div className="flex gap-2">
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Check className="h-3 w-3 text-green-500" />
+                    <span>{safeCounts}</span>
+                  </Badge>
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    <span>{cautionCounts}</span>
+                  </Badge>
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <XCircle className="h-3 w-3 text-red-500" />
+                    <span>{avoidCounts}</span>
+                  </Badge>
+                </div>
+              </div>
               
-              {/* Show precautions if not safe */}
-              {(result.recommendation === 'caution' || result.recommendation === 'avoid') && (
-                <Alert className="bg-background/50 mt-3 border-amber-300">
-                  <AlertTitle className="flex items-center text-sm font-medium">
-                    <AlertCircle className="h-4 w-4 text-amber-500" />
-                    <span className="ml-2">Precautions:</span>
-                  </AlertTitle>
-                  <AlertDescription className="text-sm">
-                    {getPrecautions(result.condition)}
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {result.effects && result.effects.length > 0 && (
-                <CollapsibleTrigger className="w-full mt-3 flex items-center justify-between p-2 bg-background/70 rounded text-sm font-medium hover:bg-background/90 transition-colors">
-                  <span>How ingredients affect {result.condition.toLowerCase()}</span>
-                  {openCards.includes(index) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </CollapsibleTrigger>
-              )}
-              
-              <CollapsibleContent>
-                {result.effects && result.effects.length > 0 ? (
-                  <div className="mt-3 space-y-3">
-                    {result.effects.map((effect, i) => (
-                      <div key={i} className="bg-background/40 p-3 rounded">
-                        <h4 className="font-medium text-sm">{effect.ingredient}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{effect.effect}</p>
-                      </div>
-                    ))}
+              <div className="space-y-2">
+                {results.map((result, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-2 rounded-md flex justify-between items-center border ${
+                      result.recommendation === 'safe' ? 'border-green-200 bg-green-50' :
+                      result.recommendation === 'caution' ? 'border-amber-200 bg-amber-50' :
+                      'border-red-200 bg-red-50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      {getRecommendationIcon(result.recommendation)}
+                      <span className="ml-2">{result.condition}</span>
+                    </div>
+                    <Badge variant={getBadgeVariant(result.recommendation)}>
+                      {getRecommendationTitle(result.recommendation)}
+                    </Badge>
                   </div>
-                ) : (
-                  <div className="mt-3 text-sm text-center text-muted-foreground p-3">
-                    No specific ingredient effects to display.
-                  </div>
-                )}
-              </CollapsibleContent>
+                ))}
+              </div>
             </CardContent>
           </Card>
-        </Collapsible>
-      ))}
+        </TabsContent>
+        
+        <TabsContent value="detailed" className="mt-0 space-y-4">
+          {results.map((result, index) => (
+            <Collapsible 
+              key={index}
+              open={openCards.includes(index)}
+              onOpenChange={() => toggleCard(index)}
+            >
+              <Card 
+                className={`w-full ${getRecommendationClass(result.recommendation)}`}
+              >
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span>{result.condition}</span>
+                    <span className="text-sm font-normal flex items-center">
+                      {getRecommendationIcon(result.recommendation)}
+                      <span className="ml-1">{getRecommendationTitle(result.recommendation)}</span>
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Alert className="bg-background/50">
+                    <AlertTitle className="flex items-center text-sm font-medium">
+                      {getRecommendationIcon(result.recommendation)}
+                      <span className="ml-2">
+                        {result.recommendation === 'safe' ? 'Analysis Result:' : 'Warning:'}
+                      </span>
+                    </AlertTitle>
+                    <AlertDescription className="text-sm">
+                      {result.reasoning}
+                    </AlertDescription>
+                  </Alert>
+                  
+                  {/* Show precautions if not safe */}
+                  {(result.recommendation === 'caution' || result.recommendation === 'avoid') && (
+                    <Alert className="bg-background/50 mt-3 border-amber-300">
+                      <AlertTitle className="flex items-center text-sm font-medium">
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
+                        <span className="ml-2">Precautions:</span>
+                      </AlertTitle>
+                      <AlertDescription className="text-sm">
+                        {getPrecautions(result.condition)}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {result.effects && result.effects.length > 0 && (
+                    <CollapsibleTrigger className="w-full mt-3 flex items-center justify-between p-2 bg-background/70 rounded text-sm font-medium hover:bg-background/90 transition-colors">
+                      <span>How ingredients affect {result.condition.toLowerCase()}</span>
+                      {openCards.includes(index) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </CollapsibleTrigger>
+                  )}
+                  
+                  <CollapsibleContent>
+                    {result.effects && result.effects.length > 0 ? (
+                      <div className="mt-3 space-y-3">
+                        {result.effects.map((effect, i) => (
+                          <div key={i} className="bg-background/40 p-3 rounded">
+                            <h4 className="font-medium text-sm">{effect.ingredient}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">{effect.effect}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-sm text-center text-muted-foreground p-3">
+                        No specific ingredient effects to display.
+                      </div>
+                    )}
+                  </CollapsibleContent>
+                </CardContent>
+              </Card>
+            </Collapsible>
+          ))}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
