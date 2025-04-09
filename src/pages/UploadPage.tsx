@@ -10,10 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FileText, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
+import { useUser } from '@/services/UserContext';
 
 const UploadPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { setExtractedText, setAnalysisResults } = useAnalysis();
+  const { recordScan } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,6 +33,12 @@ const UploadPage = () => {
       // Analyze for health conditions
       const results = analyzeForHealthConditions(nutritionData);
       setAnalysisResults(results);
+      
+      // Check if product is safe (no 'avoid' recommendations)
+      const isSafe = !results.some(result => result.recommendation === 'avoid');
+      
+      // Record scan in user profile to update achievements
+      recordScan(isSafe);
       
       toast({
         title: "Analysis complete",

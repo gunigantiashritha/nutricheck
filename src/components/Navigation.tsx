@@ -2,7 +2,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Upload, FileText, Home, Info } from 'lucide-react';
+import { Upload, FileText, Home, Info, User } from 'lucide-react';
 
 interface NavigationProps {
   vertical?: boolean;
@@ -69,6 +69,18 @@ const Navigation = ({ vertical = false }: NavigationProps) => {
       >
         {vertical && <FileText className="mr-2 h-4 w-4" />}
         Results
+      </NavLink>
+      
+      <NavLink 
+        to="/profile" 
+        className={({ isActive }) => cn(
+          baseLinkStyles,
+          vertical ? verticalLinkStyles : horizontalLinkStyles,
+          isActive ? (vertical ? activeVerticalClass : activeHorizontalClass) : ""
+        )}
+      >
+        {vertical && <User className="mr-2 h-4 w-4" />}
+        Profile
       </NavLink>
     </nav>
   );

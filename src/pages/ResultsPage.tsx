@@ -1,18 +1,59 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
 import AnalysisResults from '@/components/AnalysisResults';
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Upload } from 'lucide-react';
+import { FileText, Upload, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
+import { useUser } from '@/services/UserContext';
+import { useToast } from '@/hooks/use-toast';
 
 const ResultsPage = () => {
   const { analysisResults } = useAnalysis();
+  const { healthProfile } = useUser();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const hasResults = analysisResults && analysisResults.length > 0;
+  
+  // Show achievement notifications when user reaches milestones
+  useEffect(() => {
+    const { achievements, scanHistory } = healthProfile;
+    
+    if (achievements.firstScan && scanHistory.count === 1) {
+      toast({
+        title: "Achievement Unlocked! 🎉",
+        description: "First Scan: You've scanned your first product!",
+        duration: 5000,
+      });
+    }
+    
+    if (achievements.threeDayStreak && scanHistory.streak === 3) {
+      toast({
+        title: "Achievement Unlocked! 🎉",
+        description: "Consistent Checker: You've used the app 3 days in a row!",
+        duration: 5000,
+      });
+    }
+    
+    if (achievements.tenScans && scanHistory.count === 10) {
+      toast({
+        title: "Achievement Unlocked! 🎉",
+        description: "Nutrition Expert: You've scanned 10 different products!",
+        duration: 5000,
+      });
+    }
+    
+    if (achievements.fiveSafeProducts) {
+      toast({
+        title: "Achievement Unlocked! 🎉",
+        description: "Safe Food Finder: You've found 5 products that are safe for your health!",
+        duration: 5000,
+      });
+    }
+  }, [healthProfile, toast]);
 
   return (
     <PageLayout>
@@ -23,6 +64,18 @@ const ResultsPage = () => {
             Check if this food product is suitable for your health needs
           </p>
         </div>
+        
+        {hasResults && (
+          <div className="bg-gray-50 rounded-lg p-3 mb-4 flex items-center shadow-sm w-full max-w-md">
+            <Award className="h-5 w-5 text-health-blue mr-2" />
+            <p className="text-sm">
+              <span className="font-medium">Scan #{healthProfile.scanHistory.count}</span>
+              {healthProfile.scanHistory.streak > 1 && (
+                <span className="ml-2">• {healthProfile.scanHistory.streak} day streak!</span>
+              )}
+            </p>
+          </div>
+        )}
         
         {hasResults ? (
           <div className="w-full max-w-md">
@@ -50,12 +103,19 @@ const ResultsPage = () => {
           </div>
         )}
         
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <Button 
-            variant="outline"
+            variant="default"
             onClick={() => navigate('/upload')}
           >
             Upload Another Label
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/profile')}
+          >
+            View Achievements
           </Button>
         </div>
       </div>
