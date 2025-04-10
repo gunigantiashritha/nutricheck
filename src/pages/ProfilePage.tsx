@@ -1,19 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
-import ProfileSetup from '@/components/ProfileSetup';
 import Achievements from '@/components/Achievements';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Award, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Award, RefreshCw } from 'lucide-react';
 
 const ProfilePage = () => {
   const { healthProfile, resetProfile } = useUser();
   const { toast } = useToast();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const navigate = useNavigate();
   
   const handleResetProfile = () => {
     resetProfile();
@@ -77,10 +77,9 @@ const ProfilePage = () => {
             <Button 
               variant="outline" 
               className="w-full flex justify-center items-center"
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              onClick={() => navigate('/profile/edit')}
             >
-              {isProfileOpen ? 'Hide Profile Editor' : 'Edit Profile'}
-              {isProfileOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+              Edit Profile
             </Button>
           </CardFooter>
         </Card>
@@ -88,12 +87,6 @@ const ProfilePage = () => {
         <div className="w-full max-w-md">
           <Achievements />
         </div>
-        
-        {isProfileOpen && (
-          <div className="w-full max-w-md pt-4 animate-in fade-in slide-in-from-top-5 duration-300">
-            <ProfileSetup />
-          </div>
-        )}
         
         <AlertDialog>
           <AlertDialogTrigger asChild>

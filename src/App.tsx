@@ -9,6 +9,7 @@ import AboutPage from "./pages/AboutPage";
 import UploadPage from "./pages/UploadPage";
 import ResultsPage from "./pages/ResultsPage";
 import ProfilePage from "./pages/ProfilePage";
+import ProfileEditPage from "./pages/ProfileEditPage";
 import NotFound from "./pages/NotFound";
 import { AnalysisProvider } from "./services/AnalysisContext";
 import { UserProvider } from "./services/UserContext";
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/results" element={<ResultsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<ProfileEditPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
