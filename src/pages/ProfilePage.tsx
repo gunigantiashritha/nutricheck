@@ -75,18 +75,14 @@ const ProfilePage = () => {
             </ul>
           </CardContent>
           <CardFooter className="pt-2">
-            <Collapsible 
-              open={isProfileOpen} 
-              onOpenChange={setIsProfileOpen}
-              className="w-full"
+            <Button 
+              variant="outline" 
+              className="w-full flex justify-center items-center"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full flex justify-center items-center">
-                  {isProfileOpen ? 'Hide Profile Editor' : 'Edit Profile'}
-                  {isProfileOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                </Button>
-              </CollapsibleTrigger>
-            </Collapsible>
+              {isProfileOpen ? 'Hide Profile Editor' : 'Edit Profile'}
+              {isProfileOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+            </Button>
           </CardFooter>
         </Card>
         
@@ -94,13 +90,11 @@ const ProfilePage = () => {
           <Achievements />
         </div>
         
-        <Collapsible open={isProfileOpen} className="w-full max-w-md">
-          <CollapsibleContent>
-            <div className="pt-4 w-full">
-              <ProfileSetup />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        {isProfileOpen && (
+          <div className="w-full max-w-md pt-4 transition-all duration-300">
+            <ProfileSetup />
+          </div>
+        )}
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
