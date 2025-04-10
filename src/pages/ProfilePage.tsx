@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { User, Award, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ProfilePage = () => {
@@ -91,7 +90,7 @@ const ProfilePage = () => {
         </div>
         
         {isProfileOpen && (
-          <div className="w-full max-w-md pt-4 transition-all duration-300">
+          <div className="w-full max-w-md pt-4 animate-in fade-in slide-in-from-top-5 duration-300">
             <ProfileSetup />
           </div>
         )}
