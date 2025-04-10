@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import PageLayout from '@/components/PageLayout';
 import ProfileSetup from '@/components/ProfileSetup';
 import Achievements from '@/components/Achievements';
@@ -8,11 +8,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Award, RefreshCw } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { User, Award, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ProfilePage = () => {
   const { healthProfile, resetProfile } = useUser();
   const { toast } = useToast();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   
   const handleResetProfile = () => {
     resetProfile();
@@ -73,9 +75,18 @@ const ProfilePage = () => {
             </ul>
           </CardContent>
           <CardFooter className="pt-2">
-            <Button variant="outline" className="w-full" onClick={() => document.getElementById('edit-profile-section')?.scrollIntoView({ behavior: 'smooth' })}>
-              Edit Profile
-            </Button>
+            <Collapsible 
+              open={isProfileOpen} 
+              onOpenChange={setIsProfileOpen}
+              className="w-full"
+            >
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-full flex justify-center items-center">
+                  {isProfileOpen ? 'Hide Profile Editor' : 'Edit Profile'}
+                  {isProfileOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
           </CardFooter>
         </Card>
         
@@ -83,9 +94,13 @@ const ProfilePage = () => {
           <Achievements />
         </div>
         
-        <div id="edit-profile-section" className="w-full max-w-md pt-4">
-          <ProfileSetup />
-        </div>
+        <Collapsible open={isProfileOpen} className="w-full max-w-md">
+          <CollapsibleContent>
+            <div className="pt-4 w-full">
+              <ProfileSetup />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
