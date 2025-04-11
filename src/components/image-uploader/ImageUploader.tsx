@@ -2,7 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Upload, Camera } from 'lucide-react';
+import { Upload, Camera, ScanLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CameraDialog from '@/components/camera/CameraDialog';
 import ImagePreview from '@/components/image-uploader/ImagePreview';
@@ -78,13 +78,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
                 Upload Image
               </Button>
               <Button
-                variant="outline"
+                variant="default"
                 className="flex-1"
                 onClick={() => setIsCameraOpen(true)}
                 disabled={isProcessing}
               >
                 <Camera className="mr-2 h-4 w-4" />
-                Take Photo
+                Scan Label
               </Button>
             </div>
           </div>

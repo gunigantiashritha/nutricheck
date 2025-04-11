@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,14 +94,33 @@
   }
 }
 
-.result-card-safe {
-  @apply border-l-4 border-safe;
-}
+@layer utilities {
+  .animate-scan {
+    animation: scan 1.5s linear infinite;
+  }
 
-.result-card-caution {
-  @apply border-l-4 border-caution;
-}
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(400%);
+    }
+  }
 
-.result-card-avoid {
-  @apply border-l-4 border-avoid;
+  .result-card-safe {
+    @apply border-l-4 border-green-500 bg-green-50/30;
+  }
+  
+  .result-card-caution {
+    @apply border-l-4 border-amber-500 bg-amber-50/30;
+  }
+  
+  .result-card-avoid {
+    @apply border-l-4 border-red-500 bg-red-50/30;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }
