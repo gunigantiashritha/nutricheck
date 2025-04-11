@@ -18,6 +18,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,20 +48,48 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
   
   const openCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
+      // Reset error state
+      setCameraError(null);
       
-      setCameraStream(stream);
+      // Request camera with environment facing mode first (rear camera)
+      // If that fails, fall back to any available camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' }
+        });
+        setCameraStream(stream);
+      } catch (err) {
+        console.log('Failed to access rear camera, trying any camera:', err);
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true 
+        });
+        setCameraStream(stream);
+      }
       
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+          if (videoRef.current) {
+            videoRef.current.play().catch(err => {
+              console.error('Failed to play video:', err);
+              toast({
+                title: 'Camera Error',
+                description: 'Could not start video stream. Please check permissions.',
+                variant: 'destructive',
+              });
+            });
+          }
+        };
+        
+        if (cameraStream) {
+          videoRef.current.srcObject = cameraStream;
+        }
       }
       
       setIsCameraOpen(true);
     } catch (err) {
       console.error('Error accessing camera:', err);
+      setCameraError('Could not access camera');
       toast({
         title: 'Camera Error',
         description: 'Could not access your device camera. Please check permissions.',
@@ -71,10 +100,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
   
   const closeCamera = () => {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream.getTracks().forEach(track => {
+        track.stop();
+      });
       setCameraStream(null);
     }
     setIsCameraOpen(false);
+    setCameraError(null);
   };
   
   const capturePhoto = () => {
@@ -89,23 +121,43 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
       // Draw current video frame to canvas
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Convert canvas to blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            // Create a File from the blob
-            const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
-            
-            // Set preview and call the parent handler
-            const imageUrl = URL.createObjectURL(blob);
-            setPreview(imageUrl);
-            onImageCapture(file);
-            
-            // Close camera
-            closeCamera();
-          }
-        }, 'image/jpeg', 0.9);
+        try {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Convert canvas to blob
+          canvas.toBlob((blob) => {
+            if (blob) {
+              // Create a File from the blob
+              const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+              
+              // Set preview and call the parent handler
+              const imageUrl = URL.createObjectURL(blob);
+              setPreview(imageUrl);
+              onImageCapture(file);
+              
+              toast({
+                title: "Photo captured",
+                description: "Processing the nutrition label...",
+              });
+              
+              // Close camera
+              closeCamera();
+            } else {
+              toast({
+                title: "Capture failed",
+                description: "Failed to create image from camera. Please try again.",
+                variant: "destructive",
+              });
+            }
+          }, 'image/jpeg', 0.9);
+        } catch (err) {
+          console.error('Error capturing photo:', err);
+          toast({
+            title: "Capture failed",
+            description: "Failed to capture photo. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     }
   };
@@ -186,12 +238,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
           </DialogHeader>
           
           <div className="relative overflow-hidden rounded-md">
-            <video
-              ref={videoRef}
-              className="w-full h-auto"
-              autoPlay
-              playsInline
-            />
+            {cameraError ? (
+              <div className="bg-red-50 p-4 rounded-md text-center">
+                <p className="text-red-700 font-medium">Camera access error</p>
+                <p className="text-red-600 text-sm mt-1">
+                  {cameraError}. Please check your camera permissions.
+                </p>
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                className="w-full h-auto"
+                autoPlay
+                playsInline
+                muted
+              />
+            )}
             
             <Button 
               variant="outline" 
@@ -209,6 +271,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
             <Button 
               onClick={capturePhoto}
               className="w-full sm:w-auto"
+              disabled={!!cameraError}
             >
               <Camera className="mr-2 h-4 w-4" />
               Capture
