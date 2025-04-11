@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, Camera, ScanLine } from 'lucide-react';
@@ -17,6 +17,25 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const { toast } = useToast();
+
+  // When component mounts, check if browser supports camera
+  useEffect(() => {
+    const checkCameraSupport = async () => {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          toast({
+            title: "Camera not supported",
+            description: "Your browser does not support camera access. Please use image upload instead.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking camera support:", error);
+      }
+    };
+
+    checkCameraSupport();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +68,19 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
     onImageCapture(file);
   };
 
+  const openCamera = () => {
+    // Request camera access
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      setIsCameraOpen(true);
+    } else {
+      toast({
+        title: "Camera Access Error",
+        description: "Unable to access your device camera. Please use image upload instead.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
       <Card className="w-full max-w-md mx-auto">
@@ -65,6 +97,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
               ref={fileInputRef}
               onChange={handleFileChange}
               accept="image/*"
+              capture="environment"
               className="hidden"
             />
 
@@ -80,7 +113,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
               <Button
                 variant="default"
                 className="flex-1"
-                onClick={() => setIsCameraOpen(true)}
+                onClick={openCamera}
                 disabled={isProcessing}
               >
                 <Camera className="mr-2 h-4 w-4" />

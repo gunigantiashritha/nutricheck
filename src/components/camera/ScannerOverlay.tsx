@@ -11,7 +11,7 @@ const ScannerOverlay: React.FC<ScannerOverlayProps> = ({ isProcessing }) => {
       {/* Scanner window with transparent center */}
       <div className="relative h-full w-full">
         {/* Semi-transparent overlay with a clear rectangle in the middle */}
-        <div className="absolute inset-0 bg-black bg-opacity-50">
+        <div className="absolute inset-0 bg-black bg-opacity-60">
           {/* Clear scanning area */}
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
                         w-3/4 h-56 border-2 border-white rounded-md">

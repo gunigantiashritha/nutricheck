@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Camera, X, FlipHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,16 +30,25 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentCamera, setCurrentCamera] = useState<'environment' | 'user'>('environment');
+  const [hasRequestedPermission, setHasRequestedPermission] = useState(false);
   const { toast } = useToast();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
+      if (!hasRequestedPermission) {
+        // First time opening the camera - show permission toast
+        toast({
+          title: "Camera Access",
+          description: "Please allow camera access to scan nutrition labels.",
+        });
+        setHasRequestedPermission(true);
+      }
       initializeCamera();
     } else {
       closeCamera();
       setIsProcessing(false);
     }
-  }, [open, currentCamera]);
+  }, [open, currentCamera, hasRequestedPermission]);
 
   const initializeCamera = async () => {
     try {
@@ -52,19 +61,12 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
           video: { facingMode: currentCamera }
         });
         setCameraStream(stream);
-      } catch (err) {
-        console.log(`Failed to access ${currentCamera} camera, trying any camera:`, err);
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: true 
-        });
-        setCameraStream(stream);
-      }
-      
-      if (videoRef.current) {
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          if (videoRef.current) {
-            videoRef.current.play().catch(err => {
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            console.log('Video metadata loaded');
+            videoRef.current?.play().catch(err => {
               console.error('Failed to play video:', err);
               toast({
                 title: 'Camera Error',
@@ -72,19 +74,34 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
                 variant: 'destructive',
               });
             });
-          }
-        };
+          };
+        }
+      } catch (err) {
+        console.log(`Failed to access ${currentCamera} camera, trying any camera:`, err);
         
-        if (cameraStream) {
-          videoRef.current.srcObject = cameraStream;
+        // If specific camera fails, try any available camera
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true 
+          });
+          setCameraStream(stream);
+          
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play().catch(console.error);
+            };
+          }
+        } catch (fallbackErr) {
+          throw fallbackErr; // Re-throw to be caught by outer catch
         }
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
       setCameraError('Could not access camera');
       toast({
-        title: 'Camera Error',
-        description: 'Could not access your device camera. Please check permissions.',
+        title: 'Camera Access Denied',
+        description: 'Please allow camera access in your browser settings to scan nutrition labels.',
         variant: 'destructive',
       });
     }
@@ -186,7 +203,7 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
                 Camera access error: {cameraError}
                 <br />
                 <span className="text-sm mt-1 block">
-                  Please check your camera permissions.
+                  Please check your camera permissions in your browser settings.
                 </span>
               </p>
             </div>
@@ -224,6 +241,7 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
             className="rounded-full"
           >
             <FlipHorizontal className="h-4 w-4" />
+            <span className="sr-only">Switch camera</span>
           </Button>
           
           <Button 
