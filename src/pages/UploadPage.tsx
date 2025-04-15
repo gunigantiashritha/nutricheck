@@ -7,7 +7,7 @@ import { extractTextFromImage } from '@/services/ocrService';
 import { parseNutritionInfo, analyzeForHealthConditions } from '@/services/analysisService';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ArrowRight, Image, Camera, Sparkles } from 'lucide-react';
+import { FileText, ArrowRight, Image, Camera, Sparkles, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
@@ -24,12 +24,38 @@ const UploadPage = () => {
     try {
       setIsProcessing(true);
       
+      // Show processing toast
+      toast({
+        title: "Processing Image",
+        description: "Extracting nutrition information...",
+      });
+      
       // Extract text from image
       const text = await extractTextFromImage(imageFile);
+      console.log("Extracted text:", text);
       setExtractedText(text);
+      
+      if (!text || text.trim().length < 10) {
+        toast({
+          title: "Text Detection Issue",
+          description: "Could not detect enough text from the image. Try adjusting lighting or focus.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
       
       // Parse nutrition information
       const nutritionData = parseNutritionInfo(text);
+      console.log("Parsed nutrition data:", nutritionData);
+      
+      if (!nutritionData.ingredients || nutritionData.ingredients.length === 0) {
+        toast({
+          title: "Ingredients Not Found",
+          description: "Could not detect ingredients list. Try capturing a clearer image of the full label.",
+          variant: "destructive",
+        });
+      }
       
       // Analyze for health conditions
       const results = analyzeForHealthConditions(nutritionData);
@@ -46,7 +72,7 @@ const UploadPage = () => {
       
       toast({
         title: "Analysis complete",
-        description: "We've analyzed the nutrition label for you.",
+        description: "We've analyzed the nutrition label for health conditions.",
       });
       
       // Navigate to results page
@@ -55,7 +81,7 @@ const UploadPage = () => {
       console.error('Error processing image:', error);
       toast({
         title: "Error",
-        description: "Failed to process the image. Please try again.",
+        description: "Failed to process the image. Please try again with a clearer photo.",
         variant: "destructive",
       });
     } finally {
@@ -116,6 +142,10 @@ const UploadPage = () => {
                     <span className="font-medium mr-2">•</span>
                     Hold the camera steady and close to label
                   </li>
+                  <li className="flex items-start">
+                    <span className="font-medium mr-2">•</span>
+                    Capture both nutrition facts and ingredients list
+                  </li>
                 </ul>
               </CardContent>
             </Card>
@@ -123,22 +153,26 @@ const UploadPage = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center">
-                  <Image className="mr-2 h-5 w-5 text-health-blue" />
-                  What to Capture
+                  <ScanLine className="mr-2 h-5 w-5 text-health-blue" />
+                  Health Analysis
                 </CardTitle>
                 <CardDescription>
-                  Important label sections
+                  What we check for
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
-                    Nutrition facts panel with values
+                    Diabetes concerns (sugars, carbs)
                   </li>
                   <li className="flex items-start">
                     <span className="font-medium mr-2">•</span>
-                    Complete ingredients list
+                    Hypertension factors (sodium)
+                  </li>
+                  <li className="flex items-start">
+                    <span className="font-medium mr-2">•</span>
+                    Thyroid concerns and allergens
                   </li>
                 </ul>
               </CardContent>

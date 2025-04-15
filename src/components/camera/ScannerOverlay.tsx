@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { ScanLine } from 'lucide-react';
 
 interface ScannerOverlayProps {
   isProcessing: boolean;
@@ -30,10 +31,18 @@ const ScannerOverlay: React.FC<ScannerOverlayProps> = ({ isProcessing }) => {
         </div>
         
         {/* Scanning animation */}
-        {isProcessing && (
+        {isProcessing ? (
           <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                        w-3/4 h-56 overflow-hidden">
+                      w-3/4 h-56 overflow-hidden flex items-center justify-center">
             <div className="h-1 bg-green-400 w-full animate-scan"></div>
+            <div className="absolute text-white text-sm font-medium">
+              Analyzing...
+            </div>
+          </div>
+        ) : (
+          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                      w-3/4 h-56 overflow-hidden">
+            <div className="h-0.5 bg-blue-400 w-full animate-scan"></div>
           </div>
         )}
       </div>

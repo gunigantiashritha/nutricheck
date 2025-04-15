@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, X, FlipHorizontal } from 'lucide-react';
+import { Camera, X, FlipHorizontal, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -31,6 +31,7 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentCamera, setCurrentCamera] = useState<'environment' | 'user'>('environment');
   const [hasRequestedPermission, setHasRequestedPermission] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,9 +58,14 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
       
       // Request camera with specified facing mode
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: currentCamera }
-        });
+        const constraints = { 
+          video: { 
+            facingMode: currentCamera,
+            advanced: [{ zoom: zoomLevel }]
+          }
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         setCameraStream(stream);
         
         if (videoRef.current) {
@@ -81,9 +87,7 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
         
         // If specific camera fails, try any available camera
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true 
-          });
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
           setCameraStream(stream);
           
           if (videoRef.current) {
@@ -119,6 +123,29 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
 
   const toggleCamera = () => {
     setCurrentCamera(prev => prev === 'environment' ? 'user' : 'environment');
+  };
+  
+  const adjustZoom = (increase: boolean) => {
+    setZoomLevel(prevZoom => {
+      const newZoom = increase ? prevZoom + 0.1 : prevZoom - 0.1;
+      return Math.max(1, Math.min(newZoom, 2.5)); // Limit zoom between 1x and 2.5x
+    });
+    
+    // Try to apply zoom if supported by the browser/device
+    if (cameraStream) {
+      const videoTrack = cameraStream.getVideoTracks()[0];
+      try {
+        const capabilities = videoTrack.getCapabilities?.();
+        if (capabilities?.zoom) {
+          const constraints = { advanced: [{ zoom: zoomLevel }] };
+          videoTrack.applyConstraints(constraints).catch(e => 
+            console.log("Zoom not supported on this device:", e)
+          );
+        }
+      } catch (e) {
+        console.log("Zoom adjustment not supported");
+      }
+    }
   };
 
   const capturePhoto = async () => {
@@ -233,16 +260,40 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
         <canvas ref={canvasRef} className="hidden" />
         
         <DialogFooter className="p-4 flex justify-between items-center">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={toggleCamera}
-            disabled={!!cameraError || isProcessing}
-            className="rounded-full"
-          >
-            <FlipHorizontal className="h-4 w-4" />
-            <span className="sr-only">Switch camera</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleCamera}
+              disabled={!!cameraError || isProcessing}
+              className="rounded-full"
+            >
+              <FlipHorizontal className="h-4 w-4" />
+              <span className="sr-only">Switch camera</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => adjustZoom(true)}
+              disabled={!!cameraError || isProcessing}
+              className="rounded-full"
+            >
+              <ZoomIn className="h-4 w-4" />
+              <span className="sr-only">Zoom in</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => adjustZoom(false)}
+              disabled={!!cameraError || isProcessing || zoomLevel <= 1}
+              className="rounded-full"
+            >
+              <ZoomOut className="h-4 w-4" />
+              <span className="sr-only">Zoom out</span>
+            </Button>
+          </div>
           
           <Button 
             onClick={capturePhoto}
@@ -261,7 +312,9 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
             </span>
           </Button>
           
-          <div className="w-10"></div> {/* Placeholder for layout balance */}
+          <div className="w-24 flex justify-end">
+            {zoomLevel > 1 && <span className="text-xs text-white bg-black/50 px-2 py-1 rounded-full">{zoomLevel.toFixed(1)}x</span>}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

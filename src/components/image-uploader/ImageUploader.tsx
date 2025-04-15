@@ -16,21 +16,26 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isCameraSupported, setIsCameraSupported] = useState(true);
   const { toast } = useToast();
 
   // When component mounts, check if browser supports camera
   useEffect(() => {
     const checkCameraSupport = async () => {
-      try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          toast({
-            title: "Camera not supported",
-            description: "Your browser does not support camera access. Please use image upload instead.",
-            variant: "destructive"
-          });
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setIsCameraSupported(false);
+        console.log("Camera not supported by this browser");
+      } else {
+        try {
+          // Just test if camera access is generally available
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          // Stop the stream immediately after testing
+          stream.getTracks().forEach(track => track.stop());
+          setIsCameraSupported(true);
+        } catch (err) {
+          console.log("Camera permission denied or error:", err);
+          setIsCameraSupported(false);
         }
-      } catch (error) {
-        console.error("Error checking camera support:", error);
       }
     };
 
@@ -70,7 +75,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
 
   const openCamera = () => {
     // Request camera access
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (isCameraSupported) {
       setIsCameraOpen(true);
     } else {
       toast({
@@ -114,12 +119,18 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageCapture, isProcess
                 variant="default"
                 className="flex-1"
                 onClick={openCamera}
-                disabled={isProcessing}
+                disabled={isProcessing || !isCameraSupported}
               >
                 <Camera className="mr-2 h-4 w-4" />
                 Scan Label
               </Button>
             </div>
+            
+            {!isCameraSupported && (
+              <p className="text-xs text-amber-600 mt-2">
+                Camera access not available on this device or browser. Please use the Upload option.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
