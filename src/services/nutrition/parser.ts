@@ -28,13 +28,34 @@ export function parseNutritionInfo(text: string): NutritionData {
   // Clean and normalize text
   const cleanText = text.toLowerCase().replace(/\s+/g, ' ');
 
-  // Extract ingredients
-  const ingredientsMatch = cleanText.match(/ingredients:?(.*?)(\.|$)/i);
-  if (ingredientsMatch && ingredientsMatch[1]) {
-    nutritionData.ingredients = ingredientsMatch[1]
-      .split(',')
+  // Extract ingredients - improved pattern matching
+  const ingredientsPattern = /(ingredients|contains)[:.]?\s*([^.]*)/i;
+  const ingredientsMatch = cleanText.match(ingredientsPattern);
+  if (ingredientsMatch && ingredientsMatch[2]) {
+    nutritionData.ingredients = ingredientsMatch[2]
+      .split(/,|;|\(|\)/)
       .map(item => item.trim())
       .filter(item => item.length > 0);
+    
+    console.log("Extracted ingredients:", nutritionData.ingredients);
+  } else {
+    // If no ingredients section found, try to find individual common ingredients in the text
+    console.log("No ingredients section found, scanning full text for ingredients");
+    
+    const commonIngredients = [
+      'sugar', 'water', 'salt', 'flour', 'milk', 'cream', 'oil', 'butter', 
+      'eggs', 'chicken', 'beef', 'pork', 'fish', 'wheat', 'corn', 'rice', 
+      'soy', 'tomato', 'potato', 'onion', 'garlic'
+    ];
+    
+    const foundIngredients = commonIngredients.filter(ing => 
+      new RegExp(`\\b${ing}\\b`, 'i').test(cleanText)
+    );
+    
+    if (foundIngredients.length > 0) {
+      nutritionData.ingredients = foundIngredients;
+      console.log("Found potential ingredients in text:", foundIngredients);
+    }
   }
 
   // Check for allergens
@@ -58,7 +79,7 @@ export function parseNutritionInfo(text: string): NutritionData {
   }
 
   // Extract carbohydrates
-  const carbsMatch = cleanText.match(/total carbohydrates?[:\s]+(\d+)[\s]*(g|mg)/i);
+  const carbsMatch = cleanText.match(/(?:total )?carbohydrates?[:\s]+(\d+)[\s]*(g|mg)/i);
   if (carbsMatch) {
     nutritionData.totalCarbohydrates = {
       name: 'Total Carbohydrates',
@@ -68,7 +89,7 @@ export function parseNutritionInfo(text: string): NutritionData {
   }
 
   // Extract sugars
-  const sugarsMatch = cleanText.match(/sugars?[:\s]+(\d+)[\s]*(g|mg)/i);
+  const sugarsMatch = cleanText.match(/(?:total )?sugars?[:\s]+(\d+)[\s]*(g|mg)/i);
   if (sugarsMatch) {
     nutritionData.sugars = {
       name: 'Sugars',
@@ -88,7 +109,7 @@ export function parseNutritionInfo(text: string): NutritionData {
   }
 
   // Extract fat
-  const fatMatch = cleanText.match(/total fat[:\s]+(\d+)[\s]*(g|mg)/i);
+  const fatMatch = cleanText.match(/(?:total )?fat[:\s]+(\d+)[\s]*(g|mg)/i);
   if (fatMatch) {
     nutritionData.totalFat = {
       name: 'Total Fat',

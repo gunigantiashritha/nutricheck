@@ -28,11 +28,15 @@ export interface NutritionData {
   vitamin?: NutrientInfo;
   allergens: AllergenInfo[];
   ingredients: string[];
+  productName?: string;  // Added for better product identification
+  servingSize?: string;  // Added for context
+  confidence?: number;   // Added for OCR confidence tracking
 }
 
 export interface HealthEffects {
   ingredient: string;
   effect: string;
+  severity?: 'low' | 'medium' | 'high';  // Added for more granular information
 }
 
 export interface HealthAnalysis {
@@ -40,4 +44,11 @@ export interface HealthAnalysis {
   recommendation: 'safe' | 'caution' | 'avoid';
   reasoning: string;
   effects: HealthEffects[];
+  criticalNutrients?: {  // Added for highlighting critical nutrients
+    name: string;
+    amount: number;
+    unit: string;
+    threshold: number;
+    thresholdUnit: string;
+  }[];
 }

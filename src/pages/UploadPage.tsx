@@ -7,14 +7,16 @@ import { extractTextFromImage } from '@/services/ocrService';
 import { parseNutritionInfo, analyzeForHealthConditions } from '@/services/analysisService';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, ArrowRight, Image, Camera, Sparkles, ScanLine } from 'lucide-react';
+import { FileText, ArrowRight, Image, Camera, Sparkles, ScanLine, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const UploadPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const { setExtractedText, setAnalysisResults, addToProductHistory } = useAnalysis();
   const { recordScan, healthProfile } = useUser();
   const { toast } = useToast();
@@ -23,6 +25,7 @@ const UploadPage = () => {
   const handleImageCapture = async (imageFile: File) => {
     try {
       setIsProcessing(true);
+      setProcessingStatus("Extracting text from label...");
       
       // Show processing toast
       toast({
@@ -42,22 +45,35 @@ const UploadPage = () => {
           variant: "destructive",
         });
         setIsProcessing(false);
+        setProcessingStatus(null);
         return;
       }
       
       // Parse nutrition information
+      setProcessingStatus("Parsing nutrition data...");
       const nutritionData = parseNutritionInfo(text);
       console.log("Parsed nutrition data:", nutritionData);
       
-      if (!nutritionData.ingredients || nutritionData.ingredients.length === 0) {
+      // Check if we found any meaningful data
+      const hasMeaningfulData = nutritionData.calories || 
+                              nutritionData.totalCarbohydrates || 
+                              nutritionData.sugars ||
+                              nutritionData.sodium ||
+                              nutritionData.ingredients.length > 0;
+      
+      if (!hasMeaningfulData) {
         toast({
-          title: "Ingredients Not Found",
-          description: "Could not detect ingredients list. Try capturing a clearer image of the full label.",
+          title: "Analysis Issue",
+          description: "Could not detect nutrition information. Try capturing a clearer image of the label.",
           variant: "destructive",
         });
+        setIsProcessing(false);
+        setProcessingStatus(null);
+        return;
       }
       
       // Analyze for health conditions
+      setProcessingStatus("Analyzing for health conditions...");
       const results = analyzeForHealthConditions(nutritionData);
       setAnalysisResults(results);
       
@@ -86,6 +102,7 @@ const UploadPage = () => {
       });
     } finally {
       setIsProcessing(false);
+      setProcessingStatus(null);
     }
   };
 
@@ -117,6 +134,14 @@ const UploadPage = () => {
             </div>
           )}
         </div>
+        
+        {processingStatus && (
+          <Alert className="mb-4 w-full max-w-lg">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Processing</AlertTitle>
+            <AlertDescription>{processingStatus}</AlertDescription>
+          </Alert>
+        )}
         
         <div className="w-full max-w-lg">
           <ImageUploader onImageCapture={handleImageCapture} isProcessing={isProcessing} />

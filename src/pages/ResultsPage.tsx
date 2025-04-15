@@ -1,11 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
 import AnalysisResults from '@/components/AnalysisResults';
 import HealthDashboard from '@/components/HealthDashboard';
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Upload, Award } from 'lucide-react';
+import { FileText, Upload, Award, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
@@ -13,13 +13,27 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ResultsPage = () => {
-  const { analysisResults } = useAnalysis();
+  const [isLoading, setIsLoading] = useState(true);
+  const { analysisResults, extractedText } = useAnalysis();
   const { healthProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const hasResults = analysisResults && analysisResults.length > 0;
   const hasCompletedScans = healthProfile.scanHistory && healthProfile.scanHistory.count > 0;
+
+  // Simulate loading for better UX
+  useEffect(() => {
+    if (hasResults) {
+      // Small delay to show loading state for better UX
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
+  }, [hasResults]);
   
   // Show achievement notifications when user reaches milestones
   useEffect(() => {
@@ -80,7 +94,12 @@ const ResultsPage = () => {
           </div>
         )}
         
-        {hasResults ? (
+        {isLoading && hasResults ? (
+          <div className="flex flex-col items-center justify-center p-12">
+            <Loader2 className="h-8 w-8 animate-spin text-health-blue mb-4" />
+            <p className="text-sm text-gray-600">Analyzing nutrition data...</p>
+          </div>
+        ) : hasResults ? (
           <div className="w-full max-w-3xl">
             <Tabs defaultValue="analysis" className="w-full">
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-4">
