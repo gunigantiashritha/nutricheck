@@ -58,10 +58,10 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
       
       // Request camera with specified facing mode
       try {
+        // Fixed: Remove the 'advanced' constraint with zoom as it's not supported in this format
         const constraints = { 
           video: { 
-            facingMode: currentCamera,
-            advanced: [{ zoom: zoomLevel }]
+            facingMode: currentCamera
           }
         };
         
@@ -126,18 +126,22 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
   };
   
   const adjustZoom = (increase: boolean) => {
+    // Update the zoom level state
     setZoomLevel(prevZoom => {
       const newZoom = increase ? prevZoom + 0.1 : prevZoom - 0.1;
       return Math.max(1, Math.min(newZoom, 2.5)); // Limit zoom between 1x and 2.5x
     });
     
     // Try to apply zoom if supported by the browser/device
+    // Note: Most browsers don't support zoom through constraints API,
+    // so this is more of a "best effort" approach
     if (cameraStream) {
       const videoTrack = cameraStream.getVideoTracks()[0];
       try {
+        // TypeScript-safe approach to check capabilities
         const capabilities = videoTrack.getCapabilities?.();
-        if (capabilities?.zoom) {
-          const constraints = { advanced: [{ zoom: zoomLevel }] };
+        if (capabilities && 'zoom' in capabilities) {
+          const constraints = { advanced: [{ zoom: zoomLevel }] as any[] };
           videoTrack.applyConstraints(constraints).catch(e => 
             console.log("Zoom not supported on this device:", e)
           );
