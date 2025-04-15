@@ -16,38 +16,70 @@ import { useUser, HealthProfile } from "@/services/UserContext";
 import { Plus, X, Heart } from 'lucide-react';
 
 const formSchema = z.object({
-  diabetes: z.boolean(),
-  hypertension: z.boolean(),
-  thyroidIssues: z.boolean(),
-  foodAllergies: z.array(z.string()),
+  diabetes: z.boolean().default(false),
+  hypertension: z.boolean().default(false),
+  thyroidIssues: z.boolean().default(false),
+  foodAllergies: z.array(z.string()).default([]),
 });
 
+type FormData = z.infer<typeof formSchema>;
+
 const ProfileSetup = () => {
-  const [allergies, setAllergies] = React.useState<string[]>([]);
   const [allergyInput, setAllergyInput] = React.useState<string>('');
   const { healthProfile, updateHealthCondition } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  // Initialize form with values from healthProfile
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       diabetes: healthProfile.hasCondition.diabetes,
       hypertension: healthProfile.hasCondition.hypertension,
       thyroidIssues: healthProfile.hasCondition.thyroidIssues,
-      foodAllergies: healthProfile.hasCondition.foodAllergies,
+      foodAllergies: [...healthProfile.hasCondition.foodAllergies], // Create a copy of the array
     },
   });
 
-  React.useEffect(() => {
-    setAllergies(healthProfile.hasCondition.foodAllergies);
-  }, [healthProfile.hasCondition.foodAllergies]);
+  // Add allergy handler
+  const addAllergy = () => {
+    if (!allergyInput.trim()) return;
+    
+    const currentAllergies = form.getValues('foodAllergies');
+    
+    // Check if allergy already exists (case insensitive)
+    if (currentAllergies.some(allergy => 
+      allergy.toLowerCase() === allergyInput.trim().toLowerCase()
+    )) {
+      toast({
+        title: "Allergy already added",
+        description: "This allergy is already in your list.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Add new allergy and update form
+    const newAllergies = [...currentAllergies, allergyInput.trim()];
+    form.setValue('foodAllergies', newAllergies, { shouldValidate: true });
+    setAllergyInput('');
+  };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  // Remove allergy handler
+  const removeAllergy = (allergyToRemove: string) => {
+    const currentAllergies = form.getValues('foodAllergies');
+    const newAllergies = currentAllergies.filter(
+      allergy => allergy !== allergyToRemove
+    );
+    form.setValue('foodAllergies', newAllergies, { shouldValidate: true });
+  };
+
+  // Handle form submission
+  const onSubmit = (values: FormData) => {
     updateHealthCondition('diabetes', values.diabetes);
     updateHealthCondition('hypertension', values.hypertension);
     updateHealthCondition('thyroidIssues', values.thyroidIssues);
-    updateHealthCondition('foodAllergies', allergies);
+    updateHealthCondition('foodAllergies', values.foodAllergies);
 
     toast({
       title: "Profile Updated",
@@ -55,21 +87,6 @@ const ProfileSetup = () => {
     });
 
     navigate('/upload');
-  };
-
-  const addAllergy = () => {
-    if (allergyInput.trim() && !allergies.includes(allergyInput.trim())) {
-      const newAllergies = [...allergies, allergyInput.trim()];
-      setAllergies(newAllergies);
-      form.setValue('foodAllergies', newAllergies);
-      setAllergyInput('');
-    }
-  };
-
-  const removeAllergy = (allergy: string) => {
-    const newAllergies = allergies.filter(a => a !== allergy);
-    setAllergies(newAllergies);
-    form.setValue('foodAllergies', newAllergies);
   };
 
   return (
@@ -150,42 +167,49 @@ const ProfileSetup = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="food-allergies">Food Allergies</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="food-allergies"
-                  value={allergyInput}
-                  onChange={(e) => setAllergyInput(e.target.value)}
-                  placeholder="e.g., peanuts, milk, eggs"
-                  className="flex-1"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      addAllergy();
-                    }
-                  }}
-                />
-                <Button 
-                  type="button" 
-                  onClick={addAllergy} 
-                  variant="outline" 
-                  size="icon"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mt-2">
-                {allergies.map((allergy) => (
-                  <Badge key={allergy} variant="secondary" className="px-2 py-1">
-                    {allergy}
-                    <X 
-                      className="ml-1 h-3 w-3 cursor-pointer" 
-                      onClick={() => removeAllergy(allergy)} 
-                    />
-                  </Badge>
-                ))}
-              </div>
+              <FormField
+                control={form.control}
+                name="foodAllergies"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Food Allergies</FormLabel>
+                    <div className="flex space-x-2">
+                      <Input
+                        value={allergyInput}
+                        onChange={(e) => setAllergyInput(e.target.value)}
+                        placeholder="e.g., peanuts, milk, eggs"
+                        className="flex-1"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addAllergy();
+                          }
+                        }}
+                      />
+                      <Button 
+                        type="button" 
+                        onClick={addAllergy} 
+                        variant="outline" 
+                        size="icon"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {field.value.map((allergy) => (
+                        <Badge key={allergy} variant="secondary" className="px-2 py-1">
+                          {allergy}
+                          <X 
+                            className="ml-1 h-3 w-3 cursor-pointer" 
+                            onClick={() => removeAllergy(allergy)} 
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <Button type="submit" className="w-full">Save Profile</Button>
