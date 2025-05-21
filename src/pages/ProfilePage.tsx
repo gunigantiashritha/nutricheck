@@ -2,13 +2,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
-import Achievements from '@/components/Achievements';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, Award, RefreshCw } from 'lucide-react';
+import { User, RefreshCw } from 'lucide-react';
 
 const ProfilePage = () => {
   const { healthProfile, resetProfile } = useUser();
@@ -83,10 +82,6 @@ const ProfilePage = () => {
             </Button>
           </CardFooter>
         </Card>
-        
-        <div className="w-full max-w-md">
-          <Achievements />
-        </div>
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
