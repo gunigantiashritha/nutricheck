@@ -1,4 +1,5 @@
 
+
 import { createWorker, Worker } from 'tesseract.js';
 
 /**
