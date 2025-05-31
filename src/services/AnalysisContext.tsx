@@ -1,4 +1,4 @@
-
+// analysis context
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { HealthAnalysis } from '@/services/nutrition/types';
 
