@@ -55,3 +55,4 @@ export function analyzeForAllergies(data: NutritionData): HealthAnalysis {
     effects
   };
 }
+
