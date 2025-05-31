@@ -5,6 +5,7 @@ export interface NutrientInfo {
   unit: string;
 }
 
+
 export interface AllergenInfo {
   name: string;
   found: boolean;
