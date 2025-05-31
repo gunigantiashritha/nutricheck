@@ -17,6 +17,7 @@ export const commonAllergens = [
   'mollusc', 'mollusk', 'molluscs', 'mollusks'
 ];
 
+
 // Parse nutrition info from OCR text
 export function parseNutritionInfo(text: string): NutritionData {
   // Initialize nutrition data object
