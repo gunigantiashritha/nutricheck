@@ -15,6 +15,7 @@ export const hypertensionIngredientEffects: Record<string, string> = {
   'bouillon': 'Typically high in sodium which can raise blood pressure'
 };
 
+
 export function analyzeForHypertension(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No concerning ingredients found for people with hypertension.';
