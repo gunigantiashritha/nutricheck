@@ -1,6 +1,7 @@
 
 import { NutritionData, HealthAnalysis, HealthEffects } from './types';
 
+
 // Health effect definitions for diabetes-related ingredients
 export const diabetesIngredientEffects: Record<string, string> = {
   'sugar': 'Raises blood glucose levels rapidly, potentially causing blood sugar spikes',
