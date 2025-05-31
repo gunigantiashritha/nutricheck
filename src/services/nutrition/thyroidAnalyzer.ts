@@ -18,6 +18,7 @@ export const thyroidIngredientEffects: Record<string, string> = {
   'iodized salt': 'High iodine content may affect thyroid function in sensitive individuals'
 };
 
+
 export function analyzeForThyroid(data: NutritionData): HealthAnalysis {
   let recommendation: 'safe' | 'caution' | 'avoid' = 'safe';
   let reasoning = 'No concerning ingredients found for people with thyroid issues.';
