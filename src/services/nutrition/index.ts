@@ -25,5 +25,6 @@ export function analyzeForHealthConditions(data: NutritionData): HealthAnalysis[
   return results;
 }
 
+
 export { parseNutritionInfo };
 export type { NutritionData, HealthAnalysis, HealthEffects } from './types';
