@@ -8,6 +8,7 @@ export interface HealthProfile {
     thyroidIssues: boolean;
     foodAllergies: string[];
   };
+  
   scanHistory: {
     count: number;
     lastScan: Date | null;
