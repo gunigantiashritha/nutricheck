@@ -5,6 +5,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Check, AlertTriangle, XCircle, AlertCircle, Layers } from 'lucide-react';
 import { HealthAnalysis } from '@/services/analysisService';
 import { Badge } from '@/components/ui/badge';
+import AlternativesSuggestion from './AlternativesSuggestion';
+import { generateHealthyAlternatives } from '@/services/nutrition/alternativesSuggester';
 
 interface AnalysisResultsProps {
   results: HealthAnalysis[];
@@ -101,6 +103,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
     return null;
   }
 
+  // Generate healthy alternatives
+  const alternatives = generateHealthyAlternatives(results);
+
   return (
     <div className="w-full max-w-md mx-auto mt-6 space-y-4">
       <Card className="mb-4">
@@ -172,6 +177,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading })
           </div>
         </CardContent>
       </Card>
+      
+      {/* Add alternatives suggestions */}
+      <AlternativesSuggestion alternatives={alternatives} />
     </div>
   );
 };
