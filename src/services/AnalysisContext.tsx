@@ -1,6 +1,7 @@
+
 // analysis context
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { HealthAnalysis } from '@/services/nutrition/types';
+import { HealthAnalysis, NutritionData } from '@/services/nutrition/types';
 
 interface ProductAnalysis {
   id: string;
@@ -14,6 +15,8 @@ interface AnalysisContextType {
   setExtractedText: (text: string | null) => void;
   analysisResults: HealthAnalysis[];
   setAnalysisResults: (results: HealthAnalysis[]) => void;
+  nutritionData: NutritionData | null;
+  setNutritionData: (data: NutritionData | null) => void;
   productHistory: ProductAnalysis[];
   addToProductHistory: (results: HealthAnalysis[]) => void;
 }
@@ -23,6 +26,7 @@ const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined
 export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [analysisResults, setAnalysisResults] = useState<HealthAnalysis[]>([]);
+  const [nutritionData, setNutritionData] = useState<NutritionData | null>(null);
   const [productHistory, setProductHistory] = useState<ProductAnalysis[]>([]);
 
   const addToProductHistory = (results: HealthAnalysis[]) => {
@@ -53,6 +57,8 @@ export const AnalysisProvider = ({ children }: { children: ReactNode }) => {
       setExtractedText, 
       analysisResults, 
       setAnalysisResults,
+      nutritionData,
+      setNutritionData,
       productHistory,
       addToProductHistory
     }}>

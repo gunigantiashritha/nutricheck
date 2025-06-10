@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
@@ -17,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const UploadPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
-  const { setExtractedText, setAnalysisResults, addToProductHistory } = useAnalysis();
+  const { setExtractedText, setAnalysisResults, setNutritionData, addToProductHistory } = useAnalysis();
   const { recordScan, healthProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -53,6 +52,7 @@ const UploadPage = () => {
       setProcessingStatus("Parsing nutrition data...");
       const nutritionData = parseNutritionInfo(text);
       console.log("Parsed nutrition data:", nutritionData);
+      setNutritionData(nutritionData);
       
       // Check if we found any meaningful data
       const hasMeaningfulData = nutritionData.calories || 

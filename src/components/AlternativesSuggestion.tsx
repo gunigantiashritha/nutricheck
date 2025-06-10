@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Heart, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Heart, CheckCircle } from 'lucide-react';
 import { AlternativeProduct } from '@/services/nutrition/alternativesSuggester';
 
 interface AlternativesSuggestionProps {
@@ -18,8 +18,8 @@ const AlternativesSuggestion: React.FC<AlternativesSuggestionProps> = ({ alterna
     <Card className="mt-4">
       <CardHeader>
         <CardTitle className="flex items-center text-lg">
-          <Lightbulb className="h-5 w-5 text-amber-500 mr-2" />
-          Healthier Alternatives
+          <ShoppingCart className="h-5 w-5 text-green-600 mr-2" />
+          Healthier Product Alternatives
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -55,7 +55,7 @@ const AlternativesSuggestion: React.FC<AlternativesSuggestionProps> = ({ alterna
         ))}
         
         <div className="text-xs text-muted-foreground mt-3 p-2 bg-blue-50 rounded">
-          💡 <strong>Tip:</strong> Always consult with your healthcare provider before making significant dietary changes, especially if you have medical conditions.
+          🛒 <strong>Shopping Tip:</strong> Look for these alternatives in the health food section or ask your pharmacist for diabetic-friendly options.
         </div>
       </CardContent>
     </Card>

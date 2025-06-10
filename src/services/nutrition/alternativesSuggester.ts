@@ -1,94 +1,101 @@
 
-import { HealthAnalysis } from './types';
+import { HealthAnalysis, NutritionData } from './types';
 
 export interface AlternativeProduct {
   name: string;
   reason: string;
   category: string;
   benefits: string[];
+  productType: string;
 }
 
-export function generateHealthyAlternatives(results: HealthAnalysis[]): AlternativeProduct[] {
+export function generateHealthyAlternatives(results: HealthAnalysis[], nutritionData?: NutritionData): AlternativeProduct[] {
   const alternatives: AlternativeProduct[] = [];
   
+  // Check if product has high sugar content
+  const hasSugar = nutritionData?.sugars && nutritionData.sugars.amount > 10;
+  const hasHighSodium = nutritionData?.sodium && nutritionData.sodium.amount > 400;
+  
+  // Determine product type from ingredients or context
+  const ingredients = nutritionData?.ingredients || [];
+  const ingredientText = ingredients.join(' ').toLowerCase();
+  
+  // Suggest specific product alternatives based on detected issues
   results.forEach(result => {
     if (result.recommendation === 'avoid' || result.recommendation === 'caution') {
-      switch (result.condition) {
-        case 'Diabetes':
-          if (result.reasoning.includes('sugar') || result.reasoning.includes('carbohydrate')) {
-            alternatives.push({
-              name: 'Sugar-free or stevia-sweetened alternatives',
-              reason: 'Lower glycemic index, won\'t spike blood sugar',
-              category: 'Sweeteners',
-              benefits: ['No blood sugar spikes', 'Maintains stable glucose levels', 'Suitable for diabetic diet']
-            });
-            alternatives.push({
-              name: 'Whole grain or high-fiber versions',
-              reason: 'Fiber slows sugar absorption',
-              category: 'Grains & Cereals',
-              benefits: ['Slower glucose release', 'Higher fiber content', 'Better blood sugar control']
-            });
-          }
-          break;
-          
-        case 'Hypertension':
-          if (result.reasoning.includes('sodium') || result.reasoning.includes('salt')) {
-            alternatives.push({
-              name: 'Low-sodium or no-salt-added versions',
-              reason: 'Reduces sodium intake to help manage blood pressure',
-              category: 'Low-Sodium Foods',
-              benefits: ['Reduced blood pressure risk', 'Heart-healthy', 'Lower fluid retention']
-            });
-            alternatives.push({
-              name: 'Fresh herbs and spices for flavor',
-              reason: 'Natural flavor enhancement without sodium',
-              category: 'Seasonings',
-              benefits: ['No added sodium', 'Antioxidant properties', 'Natural flavor enhancement']
-            });
-          }
-          break;
-          
-        case 'Thyroid Issues':
-          if (result.reasoning.includes('soy') || result.reasoning.includes('goitrogen')) {
-            alternatives.push({
-              name: 'Iodine-rich seafood and seaweed (in moderation)',
-              reason: 'Supports thyroid function when consumed appropriately',
-              category: 'Seafood',
-              benefits: ['Natural iodine source', 'Supports thyroid health', 'High-quality protein']
-            });
-            alternatives.push({
-              name: 'Selenium-rich foods like Brazil nuts',
-              reason: 'Selenium supports thyroid hormone production',
-              category: 'Nuts & Seeds',
-              benefits: ['Supports thyroid function', 'Antioxidant properties', 'Healthy fats']
-            });
-          }
-          break;
-          
-        case 'Food Allergies':
-          if (result.reasoning.includes('allergen')) {
-            alternatives.push({
-              name: 'Certified allergen-free alternatives',
-              reason: 'Manufactured in allergen-free facilities',
-              category: 'Allergen-Free Products',
-              benefits: ['No cross-contamination risk', 'Safe for allergic individuals', 'Peace of mind']
-            });
-            alternatives.push({
-              name: 'Naturally allergen-free whole foods',
-              reason: 'Simple, unprocessed foods reduce allergy risk',
-              category: 'Whole Foods',
-              benefits: ['Minimal processing', 'Known ingredients', 'Lower allergy risk']
-            });
-          }
-          break;
+      
+      // Sugar-related issues
+      if (result.reasoning.includes('sugar') || result.reasoning.includes('carbohydrate')) {
+        if (ingredientText.includes('biscuit') || ingredientText.includes('cookie')) {
+          alternatives.push({
+            name: 'Sugar-free digestive biscuits',
+            reason: 'Contains no added sugars, suitable for diabetic diet',
+            category: 'Biscuits & Cookies',
+            benefits: ['Zero added sugar', 'High fiber content', 'Diabetes-friendly'],
+            productType: 'biscuit'
+          });
+        } else if (ingredientText.includes('chocolate') || ingredientText.includes('candy')) {
+          alternatives.push({
+            name: 'Dark chocolate (85% cacao or higher)',
+            reason: 'Lower sugar content and rich in antioxidants',
+            category: 'Confectionery',
+            benefits: ['Lower sugar', 'Rich in antioxidants', 'Heart-healthy'],
+            productType: 'chocolate'
+          });
+        } else if (ingredientText.includes('cereal') || ingredientText.includes('breakfast')) {
+          alternatives.push({
+            name: 'Steel-cut oats or quinoa flakes',
+            reason: 'Whole grains with no added sugars',
+            category: 'Breakfast Cereals',
+            benefits: ['No added sugar', 'High protein', 'Sustained energy'],
+            productType: 'cereal'
+          });
+        } else {
+          alternatives.push({
+            name: 'Stevia-sweetened version of similar products',
+            reason: 'Natural sweetener that doesn\'t affect blood sugar',
+            category: 'Sugar Alternatives',
+            benefits: ['Natural sweetening', 'Zero calories', 'Blood sugar friendly'],
+            productType: 'sweetener'
+          });
+        }
+      }
+      
+      // Sodium-related issues
+      if (result.reasoning.includes('sodium') || result.reasoning.includes('salt')) {
+        if (ingredientText.includes('chips') || ingredientText.includes('crisp')) {
+          alternatives.push({
+            name: 'Baked vegetable chips (unsalted)',
+            reason: 'Lower sodium content with natural vegetable flavors',
+            category: 'Snacks',
+            benefits: ['No added salt', 'Baked not fried', 'Natural flavors'],
+            productType: 'chips'
+          });
+        } else if (ingredientText.includes('soup') || ingredientText.includes('broth')) {
+          alternatives.push({
+            name: 'Low-sodium organic vegetable broth',
+            reason: 'Reduced sodium with herbs for flavor',
+            category: 'Soups & Broths',
+            benefits: ['50% less sodium', 'Organic ingredients', 'Heart-healthy'],
+            productType: 'soup'
+          });
+        } else {
+          alternatives.push({
+            name: 'Herb-seasoned version without added salt',
+            reason: 'Natural herbs provide flavor without sodium',
+            category: 'Low-Sodium Options',
+            benefits: ['No added salt', 'Natural herbs', 'Blood pressure friendly'],
+            productType: 'seasoned'
+          });
+        }
       }
     }
   });
   
-  // Remove duplicates based on name
+  // Remove duplicates and limit results
   const uniqueAlternatives = alternatives.filter((alternative, index, self) => 
     index === self.findIndex(a => a.name === alternative.name)
   );
   
-  return uniqueAlternatives.slice(0, 4); // Limit to 4 alternatives
+  return uniqueAlternatives.slice(0, 3); // Limit to 3 specific alternatives
 }

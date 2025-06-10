@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '@/components/PageLayout';
@@ -12,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const ResultsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { analysisResults, extractedText } = useAnalysis();
+  const { analysisResults, extractedText, nutritionData } = useAnalysis();
   const { healthProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -102,6 +101,7 @@ const ResultsPage = () => {
             <AnalysisResults 
               results={analysisResults}
               isLoading={false}
+              nutritionData={nutritionData}
             />
           </div>
         ) : (
