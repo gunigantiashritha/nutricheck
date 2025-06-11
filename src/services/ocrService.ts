@@ -1,5 +1,4 @@
-
-import { createWorker, Worker } from 'tesseract.js';
+import { createWorker, Worker, PSM } from 'tesseract.js';
 
 /**
  * Represents the result of an OCR operation
@@ -30,7 +29,7 @@ export async function extractTextFromImage(imageFile: File): Promise<string> {
     // Configure OCR for better text recognition on nutrition labels
     await worker.setParameters({
       tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,():%/-',
-      tessedit_pageseg_mode: '6', // Assume uniform block of text
+      tessedit_pageseg_mode: PSM.SINGLE_UNIFORM_BLOCK, // Use PSM enum instead of string
       preserve_interword_spaces: '1'
     });
     
