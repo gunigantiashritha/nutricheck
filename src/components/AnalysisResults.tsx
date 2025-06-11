@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Check, AlertTriangle, XCircle, AlertCircle, Layers } from 'lucide-react';
 import { HealthAnalysis, NutritionData } from '@/services/analysisService';
 import { Badge } from '@/components/ui/badge';
+import LifestyleSuggestions from './LifestyleSuggestions';
 
 interface AnalysisResultsProps {
   results: HealthAnalysis[];
@@ -173,6 +173,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ results, isLoading, n
           </div>
         </CardContent>
       </Card>
+      
+      {/* Add lifestyle suggestions */}
+      <LifestyleSuggestions results={results} nutritionData={nutritionData} />
     </div>
   );
 };
