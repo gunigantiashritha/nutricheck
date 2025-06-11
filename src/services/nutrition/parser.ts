@@ -17,7 +17,6 @@ export const commonAllergens = [
   'mollusc', 'mollusk', 'molluscs', 'mollusks'
 ];
 
-
 // Parse nutrition info from OCR text
 export function parseNutritionInfo(text: string): NutritionData {
   // Initialize nutrition data object
@@ -26,128 +25,160 @@ export function parseNutritionInfo(text: string): NutritionData {
     ingredients: []
   };
 
-  // Clean and normalize text
-  const cleanText = text.toLowerCase().replace(/\s+/g, ' ');
+  // Clean and normalize text - remove extra spaces and special characters
+  const cleanText = text
+    .toLowerCase()
+    .replace(/[°©®™]/g, ' ') // Remove special symbols
+    .replace(/\s+/g, ' ') // Normalize spaces
+    .replace(/[:\-_]/g, ' ') // Replace separators with spaces
+    .trim();
 
-  // Extract ingredients - improved pattern matching
-  const ingredientsPattern = /(ingredients|contains)[:.]?\s*([^.]*)/i;
-  const ingredientsMatch = cleanText.match(ingredientsPattern);
-  if (ingredientsMatch && ingredientsMatch[2]) {
-    nutritionData.ingredients = ingredientsMatch[2]
-      .split(/,|;|\(|\)/)
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
-    
-    console.log("Extracted ingredients:", nutritionData.ingredients);
-  } else {
-    // If no ingredients section found, try to find individual common ingredients in the text
-    console.log("No ingredients section found, scanning full text for ingredients");
-    
-    const commonIngredients = [
-      'sugar', 'water', 'salt', 'flour', 'milk', 'cream', 'oil', 'butter', 
-      'eggs', 'chicken', 'beef', 'pork', 'fish', 'wheat', 'corn', 'rice', 
-      'soy', 'tomato', 'potato', 'onion', 'garlic'
-    ];
-    
-    const foundIngredients = commonIngredients.filter(ing => 
-      new RegExp(`\\b${ing}\\b`, 'i').test(cleanText)
-    );
-    
-    if (foundIngredients.length > 0) {
-      nutritionData.ingredients = foundIngredients;
-      console.log("Found potential ingredients in text:", foundIngredients);
+  console.log("Cleaned text for parsing:", cleanText);
+
+  // Extract ingredients with multiple patterns
+  const ingredientPatterns = [
+    /ingredients\s*[:\.]?\s*([^.]*?)(?:nutrition|allergen|contains|net|weight|$)/i,
+    /contains\s*[:\.]?\s*([^.]*?)(?:nutrition|allergen|net|weight|$)/i,
+    /made\s+with\s*[:\.]?\s*([^.]*?)(?:nutrition|allergen|net|weight|$)/i
+  ];
+
+  let foundIngredients = false;
+  for (const pattern of ingredientPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1] && match[1].length > 5) {
+      nutritionData.ingredients = match[1]
+        .split(/[,;()&]/)
+        .map(item => item.trim())
+        .filter(item => item.length > 2 && !item.match(/^\d+$/))
+        .slice(0, 15); // Limit to reasonable number
+      
+      console.log("Found ingredients:", nutritionData.ingredients);
+      foundIngredients = true;
+      break;
     }
   }
 
-  // Check for allergens
+  if (!foundIngredients) {
+    // Fallback: look for common food words in the text
+    const commonFoodWords = [
+      'wheat', 'flour', 'sugar', 'salt', 'oil', 'water', 'milk', 'cream', 'butter',
+      'eggs', 'vanilla', 'chocolate', 'cocoa', 'nuts', 'peanuts', 'almonds',
+      'rice', 'corn', 'soy', 'tomato', 'onion', 'garlic', 'spices', 'natural flavors',
+      'preservatives', 'stabilizers', 'emulsifiers'
+    ];
+    
+    const detectedIngredients = commonFoodWords.filter(word => 
+      new RegExp(`\\b${word}\\b`, 'i').test(cleanText)
+    );
+    
+    if (detectedIngredients.length > 0) {
+      nutritionData.ingredients = detectedIngredients;
+      console.log("Detected ingredients from text:", detectedIngredients);
+    }
+  }
+
+  // Check for allergens in ingredients and full text
   commonAllergens.forEach(allergen => {
     const allergenRegex = new RegExp(`\\b${allergen}\\b`, 'i');
-    const found = allergenRegex.test(cleanText) || 
-                  (nutritionData.ingredients.some(ingredient => 
-                    allergenRegex.test(ingredient)
-                  ));
+    const foundInText = allergenRegex.test(cleanText);
+    const foundInIngredients = nutritionData.ingredients.some(ingredient => 
+      allergenRegex.test(ingredient)
+    );
     
     nutritionData.allergens.push({
       name: allergen,
-      found: found
+      found: foundInText || foundInIngredients
     });
   });
 
+  // Enhanced nutrition value extraction with multiple patterns
+  const extractNutrientValue = (nutrientNames: string[], text: string) => {
+    for (const name of nutrientNames) {
+      // Pattern 1: "nutrient value unit"
+      let pattern = new RegExp(`${name}\\s+(\\d+(?:\\.\\d+)?)\\s*(g|mg|kcal|cal)`, 'i');
+      let match = text.match(pattern);
+      
+      if (!match) {
+        // Pattern 2: "nutrient: value unit" or "nutrient value"
+        pattern = new RegExp(`${name}\\s*[:\\s]+(\\d+(?:\\.\\d+)?)\\s*(g|mg|kcal|cal)?`, 'i');
+        match = text.match(pattern);
+      }
+      
+      if (!match) {
+        // Pattern 3: Look for numbers near the nutrient name
+        pattern = new RegExp(`${name}[^\\d]*(\\d+(?:\\.\\d+)?)`, 'i');
+        match = text.match(pattern);
+        if (match) {
+          // Default unit based on nutrient type
+          const defaultUnit = name.includes('sodium') ? 'mg' : 
+                             name.includes('energy') || name.includes('calorie') ? 'kcal' : 'g';
+          return {
+            name: name.charAt(0).toUpperCase() + name.slice(1),
+            amount: parseFloat(match[1]),
+            unit: defaultUnit
+          };
+        }
+      }
+      
+      if (match) {
+        return {
+          name: name.charAt(0).toUpperCase() + name.slice(1),
+          amount: parseFloat(match[1]),
+          unit: match[2] || 'g'
+        };
+      }
+    }
+    return null;
+  };
+
   // Extract calories
-  const caloriesMatch = cleanText.match(/calories[:\s]+(\d+)/i);
-  if (caloriesMatch) {
-    nutritionData.calories = parseInt(caloriesMatch[1]);
+  const caloriesResult = extractNutrientValue(['energy', 'calories?', 'kcal'], cleanText);
+  if (caloriesResult) {
+    nutritionData.calories = caloriesResult.amount;
   }
 
   // Extract carbohydrates
-  const carbsMatch = cleanText.match(/(?:total )?carbohydrates?[:\s]+(\d+)[\s]*(g|mg)/i);
-  if (carbsMatch) {
-    nutritionData.totalCarbohydrates = {
-      name: 'Total Carbohydrates',
-      amount: parseInt(carbsMatch[1]),
-      unit: carbsMatch[2]
-    };
+  const carbsResult = extractNutrientValue(['total carbohydrate', 'carbohydrate', 'carbs'], cleanText);
+  if (carbsResult) {
+    nutritionData.totalCarbohydrates = carbsResult;
   }
 
   // Extract sugars
-  const sugarsMatch = cleanText.match(/(?:total )?sugars?[:\s]+(\d+)[\s]*(g|mg)/i);
-  if (sugarsMatch) {
-    nutritionData.sugars = {
-      name: 'Sugars',
-      amount: parseInt(sugarsMatch[1]),
-      unit: sugarsMatch[2]
-    };
+  const sugarsResult = extractNutrientValue(['total sugars?', 'sugars?'], cleanText);
+  if (sugarsResult) {
+    nutritionData.sugars = sugarsResult;
   }
 
   // Extract sodium
-  const sodiumMatch = cleanText.match(/sodium[:\s]+(\d+)[\s]*(mg|g)/i);
-  if (sodiumMatch) {
-    nutritionData.sodium = {
-      name: 'Sodium',
-      amount: parseInt(sodiumMatch[1]),
-      unit: sodiumMatch[2]
-    };
+  const sodiumResult = extractNutrientValue(['sodium'], cleanText);
+  if (sodiumResult) {
+    nutritionData.sodium = sodiumResult;
   }
 
   // Extract fat
-  const fatMatch = cleanText.match(/(?:total )?fat[:\s]+(\d+)[\s]*(g|mg)/i);
-  if (fatMatch) {
-    nutritionData.totalFat = {
-      name: 'Total Fat',
-      amount: parseInt(fatMatch[1]),
-      unit: fatMatch[2]
-    };
+  const fatResult = extractNutrientValue(['total fat', 'fat'], cleanText);
+  if (fatResult) {
+    nutritionData.totalFat = fatResult;
   }
 
   // Extract saturated fat
-  const satFatMatch = cleanText.match(/saturated fat[:\s]+(\d+)[\s]*(g|mg)/i);
-  if (satFatMatch) {
-    nutritionData.saturatedFat = {
-      name: 'Saturated Fat',
-      amount: parseInt(satFatMatch[1]),
-      unit: satFatMatch[2]
-    };
-  }
-
-  // Extract cholesterol
-  const cholesterolMatch = cleanText.match(/cholesterol[:\s]+(\d+)[\s]*(mg|g)/i);
-  if (cholesterolMatch) {
-    nutritionData.cholesterol = {
-      name: 'Cholesterol',
-      amount: parseInt(cholesterolMatch[1]),
-      unit: cholesterolMatch[2]
-    };
+  const satFatResult = extractNutrientValue(['saturated fat', 'saturater fat'], cleanText);
+  if (satFatResult) {
+    nutritionData.saturatedFat = satFatResult;
   }
 
   // Extract protein
-  const proteinMatch = cleanText.match(/protein[:\s]+(\d+)[\s]*(g|mg)/i);
-  if (proteinMatch) {
-    nutritionData.protein = {
-      name: 'Protein',
-      amount: parseInt(proteinMatch[1]),
-      unit: proteinMatch[2]
-    };
+  const proteinResult = extractNutrientValue(['protein'], cleanText);
+  if (proteinResult) {
+    nutritionData.protein = proteinResult;
   }
 
+  // Extract fiber
+  const fiberResult = extractNutrientValue(['dietary fiber', 'fiber', 'fibre'], cleanText);
+  if (fiberResult) {
+    nutritionData.dietaryFiber = fiberResult;
+  }
+
+  console.log("Final parsed nutrition data:", nutritionData);
   return nutritionData;
 }

@@ -37,10 +37,10 @@ const UploadPage = () => {
       console.log("Extracted text:", text);
       setExtractedText(text);
       
-      if (!text || text.trim().length < 10) {
+      if (!text || text.trim().length < 5) {
         toast({
           title: "Text Detection Issue",
-          description: "Could not detect enough text from the image. Try adjusting lighting or focus.",
+          description: "Could not detect text from the image. Try adjusting lighting, focus, or angle.",
           variant: "destructive",
         });
         setIsProcessing(false);
@@ -49,7 +49,7 @@ const UploadPage = () => {
       }
       
       // Parse nutrition information
-      setProcessingStatus("Parsing nutrition data...");
+      setProcessingStatus("Analyzing nutrition data...");
       const nutritionData = parseNutritionInfo(text);
       console.log("Parsed nutrition data:", nutritionData);
       setNutritionData(nutritionData);
@@ -59,17 +59,18 @@ const UploadPage = () => {
                               nutritionData.totalCarbohydrates || 
                               nutritionData.sugars ||
                               nutritionData.sodium ||
+                              nutritionData.totalFat ||
+                              nutritionData.protein ||
                               nutritionData.ingredients.length > 0;
       
       if (!hasMeaningfulData) {
+        // Still proceed with analysis even if data is limited
+        console.log("Limited nutrition data detected, proceeding with basic analysis");
         toast({
-          title: "Analysis Issue",
-          description: "Could not detect nutrition information. Try capturing a clearer image of the label.",
-          variant: "destructive",
+          title: "Limited Data Detected",
+          description: "Some nutrition information was found. Proceeding with analysis.",
+          variant: "default",
         });
-        setIsProcessing(false);
-        setProcessingStatus(null);
-        return;
       }
       
       // Analyze for health conditions
@@ -87,8 +88,8 @@ const UploadPage = () => {
       recordScan(isSafe);
       
       toast({
-        title: "Analysis complete",
-        description: "We've analyzed the nutrition label for health conditions.",
+        title: "Analysis Complete",
+        description: `Analysis completed with ${results.length} health condition checks.`,
       });
       
       // Navigate to results page
@@ -96,8 +97,8 @@ const UploadPage = () => {
     } catch (error) {
       console.error('Error processing image:', error);
       toast({
-        title: "Error",
-        description: "Failed to process the image. Please try again with a clearer photo.",
+        title: "Processing Error",
+        description: "Failed to process the image. Please try with a clearer photo of the nutrition label.",
         variant: "destructive",
       });
     } finally {

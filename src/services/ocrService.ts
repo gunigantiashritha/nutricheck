@@ -1,5 +1,4 @@
 
-
 import { createWorker, Worker } from 'tesseract.js';
 
 /**
@@ -23,21 +22,82 @@ export async function extractTextFromImage(imageFile: File): Promise<string> {
   try {
     console.log(`Starting OCR process: ${imageFile.name} (${imageFile.type}, ${imageFile.size} bytes)`);
     
-    // Create a worker with English language data
-    worker = await createWorker('eng');
+    // Create a worker with English language data and better OCR settings
+    worker = await createWorker('eng', 1, {
+      logger: m => console.log('OCR Progress:', m)
+    });
+    
+    // Configure OCR for better text recognition on nutrition labels
+    await worker.setParameters({
+      tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,():%/-',
+      tessedit_pageseg_mode: '6', // Assume uniform block of text
+      preserve_interword_spaces: '1'
+    });
+    
     console.log('OCR worker initialized successfully');
     
-    // Recognize text in the image
-    const result = await worker.recognize(imageFile);
-    const ocrResult: OCRResult = {
-      text: result.data.text,
-      confidence: result.data.confidence
-    };
+    // Create an image element to preprocess if needed
+    const imageUrl = URL.createObjectURL(imageFile);
+    const img = new Image();
     
-    console.log(`OCR completed with ${ocrResult.confidence.toFixed(2)}% confidence`);
+    const processImage = new Promise<string>((resolve, reject) => {
+      img.onload = async () => {
+        try {
+          // Create a canvas to potentially enhance the image
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            throw new Error('Could not get canvas context');
+          }
+          
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          // Draw and potentially enhance the image
+          ctx.drawImage(img, 0, 0);
+          
+          // Convert canvas to blob for OCR
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create blob from canvas'));
+              return;
+            }
+            
+            try {
+              // Recognize text in the processed image
+              const result = await worker!.recognize(blob);
+              const ocrResult: OCRResult = {
+                text: result.data.text,
+                confidence: result.data.confidence
+              };
+              
+              console.log(`OCR completed with ${ocrResult.confidence.toFixed(2)}% confidence`);
+              console.log("Raw OCR text:", ocrResult.text);
+              
+              // Clean up the URL
+              URL.revokeObjectURL(imageUrl);
+              
+              resolve(ocrResult.text);
+            } catch (ocrError) {
+              reject(ocrError);
+            }
+          }, 'image/jpeg', 0.95);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+    });
+    
+    img.src = imageUrl;
+    const extractedText = await processImage;
     
     // Return the extracted text
-    return ocrResult.text;
+    return extractedText;
   } catch (error: unknown) {
     // Improved error handling with type narrowing
     const errorMessage = error instanceof Error 
