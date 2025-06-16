@@ -1,4 +1,3 @@
-
 import { HealthAnalysis, NutritionData } from './types';
 
 export interface AlternativeProduct {
