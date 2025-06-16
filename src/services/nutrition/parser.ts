@@ -1,4 +1,3 @@
-
 import { NutritionData, AllergenInfo } from './types';
 
 // Common allergens
