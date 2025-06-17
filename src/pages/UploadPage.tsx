@@ -12,7 +12,6 @@ import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
 const UploadPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
