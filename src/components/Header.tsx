@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HeartPulse, Menu } from 'lucide-react';
 import Navigation from './Navigation';
