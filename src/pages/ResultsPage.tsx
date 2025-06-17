@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
-
 const ResultsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { analysisResults, extractedText, nutritionData } = useAnalysis();
