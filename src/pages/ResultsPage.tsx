@@ -7,12 +7,10 @@ import { FileText, Upload, Award, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysis } from '@/services/AnalysisContext';
 import { useUser } from '@/services/UserContext';
-import { useToast } from '@/hooks/use-toast';
 const ResultsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { analysisResults, extractedText, nutritionData } = useAnalysis();
   const { healthProfile } = useUser();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const hasResults = analysisResults && analysisResults.length > 0;
@@ -30,43 +28,6 @@ const ResultsPage = () => {
       setIsLoading(false);
     }
   }, [hasResults]);
-  
-  // Show achievement notifications when user reaches milestones
-  useEffect(() => {
-    const { achievements, scanHistory } = healthProfile;
-    
-    if (achievements.firstScan && scanHistory.count === 1) {
-      toast({
-        title: "Achievement Unlocked! 🎉",
-        description: "First Scan: You've scanned your first product!",
-        duration: 5000,
-      });
-    }
-    
-    if (achievements.threeDayStreak && scanHistory.streak === 3) {
-      toast({
-        title: "Achievement Unlocked! 🎉",
-        description: "Consistent Checker: You've used the app 3 days in a row!",
-        duration: 5000,
-      });
-    }
-    
-    if (achievements.tenScans && scanHistory.count === 10) {
-      toast({
-        title: "Achievement Unlocked! 🎉",
-        description: "Nutrition Expert: You've scanned 10 different products!",
-        duration: 5000,
-      });
-    }
-    
-    if (achievements.fiveSafeProducts) {
-      toast({
-        title: "Achievement Unlocked! 🎉",
-        description: "Safe Food Finder: You've found 5 products that are safe for your health!",
-        duration: 5000,
-      });
-    }
-  }, [healthProfile, toast]);
 
   return (
     <PageLayout>
