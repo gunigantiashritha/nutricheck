@@ -30,7 +30,7 @@ export async function extractTextFromImage(imageFile: File): Promise<string> {
     // Configure OCR for better text recognition on nutrition labels
     await worker.setParameters({
       tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,():%/-',
-      tessedit_pageseg_mode: PSM.SINGLE_UNIFORM_BLOCK, // Use PSM enum instead of string
+      tessedit_pageseg_mode: PSM.AUTO,
       preserve_interword_spaces: '1'
     });
     

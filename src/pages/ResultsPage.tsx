@@ -134,7 +134,7 @@ const ResultsPage = () => {
             variant="outline"
             onClick={() => navigate('/profile')}
           >
-            View Achievements
+            Profile
           </Button>
         </div>
       </div>
