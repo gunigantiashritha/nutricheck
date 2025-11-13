@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeartPulse, Menu } from 'lucide-react';
+import { HeartPulse, Menu, LogOut } from 'lucide-react';
 import Navigation from './Navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from './ui/button';
@@ -8,10 +8,24 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Header = () => {
   const isMobile = useIsMobile();
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You've been signed out successfully.",
+    });
+    navigate('/auth');
+  };
 
   return (
     <header className="bg-gradient-to-r from-health-blue to-health-teal p-4 shadow-md">
@@ -29,13 +43,35 @@ const Header = () => {
               </Button>
             </SheetTrigger>
             <SheetContent>
-              <div className="mt-8">
+              <div className="mt-8 space-y-6">
                 <Navigation vertical />
+                {user && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleSignOut}
+                    className="w-full justify-start text-gray-700 hover:text-health-blue"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         ) : (
-          <Navigation />
+          <div className="flex items-center space-x-4">
+            <Navigation />
+            {user && (
+              <Button 
+                variant="ghost" 
+                onClick={handleSignOut}
+                className="text-white/80 hover:text-white hover:bg-white/20"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </header>
