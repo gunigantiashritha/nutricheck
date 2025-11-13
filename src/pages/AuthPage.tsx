@@ -102,7 +102,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-health-blue to-health-teal p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">NutriCheck</CardTitle>
