@@ -1,17 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/PageLayout';
+import MobileLayout from '@/components/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser } from '@/services/UserContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { User, RefreshCw } from 'lucide-react';
+import { User, RefreshCw, LogOut } from 'lucide-react';
 
 const ProfilePage = () => {
   const { healthProfile, resetProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   
   const handleResetProfile = () => {
     resetProfile();
@@ -21,12 +23,21 @@ const ProfilePage = () => {
     });
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You've been signed out successfully.",
+    });
+    navigate('/auth');
+  };
+
   const hasAnyCondition = Object.values(healthProfile.hasCondition).some(value => 
     Array.isArray(value) ? value.length > 0 : value
   );
 
   return (
-    <PageLayout>
+    <MobileLayout>
       <div className="flex flex-col items-center w-full space-y-6">
         <div className="text-center mb-2">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Your Profile</h1>
@@ -102,8 +113,18 @@ const ProfilePage = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Logout Button */}
+        <Button 
+          variant="destructive" 
+          className="w-full max-w-md mt-8"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </Button>
       </div>
-    </PageLayout>
+    </MobileLayout>
   );
 };
 

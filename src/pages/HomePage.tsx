@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PageLayout from '@/components/PageLayout';
+import MobileLayout from '@/components/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { HeartPulse } from 'lucide-react';
 
 const HomePage = () => {
   return (
-    <PageLayout>
+    <MobileLayout>
       <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
         <div className="mb-8 flex flex-col items-center">
           <div className="rounded-full bg-gradient-to-r from-health-blue to-health-teal p-6 mb-4">
@@ -37,7 +37,7 @@ const HomePage = () => {
           </CardContent>
         </Card>
       </div>
-    </PageLayout>
+    </MobileLayout>
   );
 };
 
