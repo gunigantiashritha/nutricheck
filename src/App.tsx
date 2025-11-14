@@ -10,6 +10,7 @@ import ResultsPage from "./pages/ResultsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileEditPage from "./pages/ProfileEditPage";
 import AuthPage from "./pages/AuthPage";
+import SplashPage from "./pages/SplashPage";
 import NotFound from "./pages/NotFound";
 import { AnalysisProvider } from "./services/AnalysisContext";
 import { UserProvider } from "./services/UserContext";
@@ -29,6 +30,7 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/splash" element={<ProtectedRoute><SplashPage /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
                 <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
                 <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
