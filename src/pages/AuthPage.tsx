@@ -47,7 +47,7 @@ const AuthPage = () => {
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-      navigate('/');
+      navigate('/splash');
     }
     setIsLoading(false);
   };
@@ -96,7 +96,7 @@ const AuthPage = () => {
         title: "Account created!",
         description: "Welcome to NutriCheck!",
       });
-      navigate('/');
+      navigate('/splash');
     }
     setIsLoading(false);
   };
