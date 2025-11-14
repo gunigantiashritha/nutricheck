@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageLayout from '@/components/PageLayout';
+import MobileLayout from '@/components/MobileLayout';
 import ImageUploader from '@/components/ImageUploader';
 import { extractTextFromImage } from '@/services/ocrService';
 import { parseNutritionInfo, analyzeForHealthConditions } from '@/services/analysisService';
@@ -110,7 +110,7 @@ const UploadPage = () => {
   const totalScans = healthProfile.scanHistory.count || 0;
 
   return (
-    <PageLayout>
+    <MobileLayout>
       <div className="flex flex-col items-center w-full">
         <div className="text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload a Nutrition Label</h1>
@@ -217,7 +217,7 @@ const UploadPage = () => {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </MobileLayout>
   );
 };
 
