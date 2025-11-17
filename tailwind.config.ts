@@ -72,6 +72,7 @@ export default {
 				'health-blue': '#60a5fa',
 				'health-green': '#34d399',
 				'health-teal': '#2dd4bf',
+				'aqua-blue': 'hsl(var(--aqua-blue))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

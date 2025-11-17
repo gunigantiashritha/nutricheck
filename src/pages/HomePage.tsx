@@ -9,14 +9,11 @@ const HomePage = () => {
   return (
     <MobileLayout>
       <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-        <div className="mb-8 flex flex-col items-center">
+        <div className="mb-6 flex flex-col items-center">
           <div className="rounded-full bg-gradient-to-r from-health-blue to-health-teal p-6 mb-4">
             <HeartPulse className="h-20 w-20 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Welcome to NutriCheck</h1>
-          <p className="text-xl text-gray-600 mb-6 max-w-md mx-auto">
-            Analyze food labels for health conditions at a glance
-          </p>
         </div>
         
         <Card className="w-full max-w-md shadow-lg">
