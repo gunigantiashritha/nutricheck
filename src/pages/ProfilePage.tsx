@@ -116,8 +116,7 @@ const ProfilePage = () => {
 
         {/* Logout Button */}
         <Button 
-          variant="destructive" 
-          className="w-full max-w-md mt-8"
+          className="w-full max-w-md mt-8 bg-[hsl(var(--aqua-blue))] text-white hover:bg-[hsl(var(--aqua-blue))]/90"
           onClick={handleSignOut}
         >
           <LogOut className="h-4 w-4 mr-2" />
