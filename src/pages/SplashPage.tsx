@@ -7,14 +7,14 @@ const SplashPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/', { replace: true });
+      navigate('/home', { replace: true });
     }, 4000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-health-blue to-health-teal">
+    <div className="min-h-screen flex items-center justify-center bg-[#4DC3E7]">
       <div className="animate-fade-in">
         <div className="rounded-full bg-white/20 backdrop-blur-sm p-8 shadow-2xl">
           <HeartPulse className="h-32 w-32 text-white animate-pulse-slow" />
