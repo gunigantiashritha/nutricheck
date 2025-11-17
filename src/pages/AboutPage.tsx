@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import PageLayout from '@/components/PageLayout';
+import MobileLayout from '@/components/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info, Utensils, AlertTriangle, Heart } from 'lucide-react';
 
 const AboutPage = () => {
   return (
-    <PageLayout>
+    <MobileLayout>
       <div className="space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">About NutriCheck</h1>
@@ -100,7 +100,7 @@ const AboutPage = () => {
           </Button>
         </div>
       </div>
-    </PageLayout>
+    </MobileLayout>
   );
 };
 
