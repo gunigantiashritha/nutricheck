@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // rebuild trigger
 import { useNavigate } from 'react-router-dom';
 import MobileLayout from '@/components/MobileLayout';
 import ImageUploader from '@/components/ImageUploader';
