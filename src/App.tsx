@@ -29,13 +29,14 @@ const App = () => (
           <AnalysisProvider>
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<SplashPage />} />
-                <Route path="/home" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/upload" element={<UploadPage />} />
-                <Route path="/results" element={<ResultsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/profile/edit" element={<ProfileEditPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/splash" element={<ProtectedRoute><SplashPage /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
+                <Route path="/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+                <Route path="/results" element={<ProtectedRoute><ResultsPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/profile/edit" element={<ProtectedRoute><ProfileEditPage /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

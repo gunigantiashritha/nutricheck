@@ -13,7 +13,7 @@ const MobileLayout = ({ children }: MobileLayoutProps) => {
       {/* Top Bar */}
       <header className="bg-[#4DC3E7] p-4 shadow-md">
         <div className="flex items-center justify-between">
-          <Link to="/home" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <HeartPulse className="h-6 w-6 text-white" />
             <h1 className="text-xl font-bold text-white">NutriCheck</h1>
           </Link>
