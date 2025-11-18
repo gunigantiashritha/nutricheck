@@ -14,12 +14,12 @@ const SplashPage = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#4A9FE8] via-[#5BB4E5] to-[#6DD5E3]">
+    <div className="min-h-screen flex items-center justify-center bg-[#4DC3E7]">
       <div className="animate-fade-in">
-        <div className="rounded-full bg-[#7DD3D8]/60 backdrop-blur-sm p-12 shadow-2xl">
-          <HeartPulse className="h-32 w-32 text-white" strokeWidth={2.5} />
+        <div className="rounded-full bg-white/20 backdrop-blur-sm p-8 shadow-2xl">
+          <HeartPulse className="h-32 w-32 text-white animate-pulse-slow" />
         </div>
-        <h1 className="text-5xl font-bold text-white text-center mt-8 tracking-wide">
+        <h1 className="text-4xl font-bold text-white text-center mt-6 tracking-wide">
           NutriCheck
         </h1>
       </div>
