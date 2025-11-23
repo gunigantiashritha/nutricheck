@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 const BottomNav = () => {
   const navItems = [
-    { to: '/', icon: Home, label: 'Home' },
+    { to: '/home', icon: Home, label: 'Home' },
     { to: '/upload', icon: Upload, label: 'Upload' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
@@ -17,7 +17,7 @@ const BottomNav = () => {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
+            end={item.to === '/home'}
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center justify-center flex-1 h-full transition-colors',
