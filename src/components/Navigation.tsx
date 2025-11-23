@@ -22,7 +22,7 @@ const Navigation = ({ vertical = false }: NavigationProps) => {
   return (
     <nav className={cn(baseNavStyles, vertical ? verticalNavStyles : horizontalNavStyles)}>
       <NavLink 
-        to="/" 
+        to="/home" 
         end
         className={({ isActive }) => cn(
           baseLinkStyles,

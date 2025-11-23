@@ -7,8 +7,8 @@ const SplashPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate('/', { replace: true });
-    }, 4000);
+      navigate('/auth', { replace: true });
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
