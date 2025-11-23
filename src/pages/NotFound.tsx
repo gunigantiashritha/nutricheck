@@ -19,7 +19,7 @@ const NotFound = () => {
         <AlertTriangle className="h-16 w-16 text-caution mx-auto mb-4" />
         <h1 className="text-4xl font-bold mb-4">404</h1>
         <p className="text-xl text-gray-600 mb-6">Sorry, the page you're looking for wasn't found</p>
-        <Link to="/home">
+        <Link to="/">
           <Button className="bg-health-blue hover:bg-health-blue/90">
             Return to Home
           </Button>
